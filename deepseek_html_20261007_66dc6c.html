@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>HSK 3 · Тренажёр</title>
+    <style>
+        /* ---------- CSS Variables: Light / Dark Theme ---------- */
+        :root {
+            --bg: #f7f5f0;
+            --surface: #ffffff;
+            --surface-alt: #f0ede8;
+            --text: #2c2c2c;
+            --text-muted: #6b6b6b;
+            --primary: #b33e2c;
+            --primary-soft: #f7e6e3;
+            --accent: #c99a3b;
+            --accent-soft: #fdf3e0;
+            --border: #ddd8d0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --font-scale: 1;
+            --transition: 0.2s ease;
+            --card-bg: #ffffff;
+            --card-back: #fcf8f2;
+            --success: #3e7c4b;
+            --error: #c0392b;
+            --warning: #e67e22;
+            --font-chinese: "KaiTi", "STKaiti", "Kai", "Noto Serif SC", "SimSun", serif;
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a1e;
+            --surface: #25252b;
+            --surface-alt: #2d2d35;
+            --text: #e8e6e3;
+            --text-muted: #9a9a9a;
+            --primary: #e06b5a;
+            --primary-soft: #3a2522;
+            --accent: #e0b35c;
+            --accent-soft: #3a3220;
+            --border: #3d3d45;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --card-bg: #2d2d35;
+            --card-back: #36363e;
+            --success: #4caf7c;
+            --error: #e74c3c;
+        }
+        /* Large / Compact */
+        [data-size="large"] { --font-scale: 1.25; }
+        [data-size="compact"] { --font-scale: 0.9; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: calc(16px * var(--font-scale)); scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-ui);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 0.8rem;
+            transition: background var(--transition), color var(--transition);
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .app {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        /* ---------- Typography ---------- */
+        h1, h2, h3, h4 { font-weight: 600; line-height: 1.3; }
+        h1 { font-size: 1.6rem; }
+        h2 { font-size: 1.3rem; }
+        h3 { font-size: 1.1rem; }
+        p { line-height: 1.6; }
+        .chinese {
+            font-family: var(--font-chinese);
+            line-height: 1.8;
+            letter-spacing: 0.02em;
+        }
+        .pinyin {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        .translation {
+            color: var(--text-muted);
+            font-size: 0.95em;
+        }
+        /* ---------- Buttons & Inputs ---------- */
+        button {
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 0.7em 1.2em;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all var(--transition);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        button:hover, button:focus-visible {
+            background: var(--surface-alt);
+            border-color: var(--primary);
+            outline: none;
+        }
+        button:active { transform: scale(0.97); }
+        button.primary {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        button.primary:hover { opacity: 0.9; }
+        button.accent {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        button.accent:hover { opacity: 0.9; }
+        button.small { padding: 0.4em 0.8em; font-size: 0.85rem; }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        input[type="text"], textarea, select {
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 0.6em 0.8em;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--text);
+            width: 100%;
+            transition: border var(--transition);
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        /* ---------- Layout ---------- */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            padding: 0.6rem 0;
+            margin-bottom: 0.8rem;
+        }
+        .header-left { display: flex; align-items: center; gap: 0.6rem; }
+        .header-right { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .logo {
+            font-family: var(--font-chinese);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .logo span { font-family: var(--font-ui); font-size: 0.75rem; color: var(--text-muted); display: block; line-height: 1; }
+        .theme-toggle, .size-toggle {
+            background: var(--surface-alt);
+            border: none;
+            padding: 0.4em 0.6em;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .main-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.7rem;
+            margin-bottom: 1.2rem;
+        }
+        .menu-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: 500;
+        }
+        .menu-card:hover, .menu-card:focus-visible {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+        .menu-card .icon { font-size: 1.6rem; line-height: 1; }
+        .menu-card .label { font-size: 0.9rem; }
+        .menu-card .sub { font-size: 0.75rem; color: var(--text-muted); }
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+        .panel-header h2 { margin: 0; }
+        .hidden { display: none !important; }
+        /* ---------- Flashcard ---------- */
+        .flashcard-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 0;
+        }
+        .flashcard {
+            width: 100%;
+            max-width: 500px;
+            min-height: 240px;
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color var(--transition);
+            box-shadow: var(--shadow);
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+            background: var(--card-back);
+        }
+        .flashcard-inner {
+            backface-visibility: hidden;
+            transition: transform 0.4s ease;
+            width: 100%;
+        }
+        .flashcard-front, .flashcard-back {
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+        .flashcard-front .chinese { font-size: 2.2rem; }
+        .flashcard-back .chinese { font-size: 1.6rem; }
+        .flashcard-back .pinyin { font-size: 1.1rem; }
+        .flashcard-back .translation { font-size: 1.1rem; }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        /* ---------- Exercise / Quiz ---------- */
+        .exercise-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .option-btn {
+            text-align: left;
+            padding: 0.8em 1em;
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            transition: all var(--transition);
+            width: 100%;
+        }
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+        }
+        .option-btn.correct {
+            background: var(--success);
+            color: #fff;
+            border-color: var(--success);
+        }
+        .option-btn.incorrect {
+            background: var(--error);
+            color: #fff;
+            border-color: var(--error);
+        }
+        .feedback {
+            font-weight: 500;
+            padding: 0.5rem 0;
+            min-height: 1.5em;
+        }
+        .feedback.correct { color: var(--success); }
+        .feedback.incorrect { color: var(--error); }
+        /* ---------- Stats / Progress ---------- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.7rem;
+        }
+        .stat-item {
+            background: var(--surface-alt);
+            border-radius: var(--radius-sm);
+            padding: 0.8rem;
+            text-align: center;
+        }
+        .stat-item .value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .stat-item .label { font-size: 0.8rem; color: var(--text-muted); }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--surface-alt);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar > div {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        /* ---------- Lists & Tables ---------- */
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.4rem;
+            border-bottom: 1px solid var(--border);
+            gap: 0.5rem;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-item .chinese { font-size: 1.1rem; }
+        .list-item .pinyin { font-size: 0.85rem; }
+        .list-item .translation { font-size: 0.9rem; }
+        .ticket-card {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 0.7rem;
+            cursor: pointer;
+            transition: border var(--transition);
+        }
+        .ticket-card:hover { border-color: var(--primary); }
+        .ticket-card .ticket-title {
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ticket-card .ticket-body {
+            margin-top: 0.6rem;
+            font-size: 0.95rem;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.15em 0.6em;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            background: var(--surface-alt);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            margin-right: 0.3rem;
+            margin-bottom: 0.2rem;
+        }
+        .tag.primary { background: var(--primary-soft); color: var(--primary); border-color: var(--primary); }
+        .tag.accent { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+        /* ---------- Modal ---------- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 0.6rem;
+            right: 0.6rem;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0.2em 0.4em;
+            line-height: 1;
+        }
+        .modal-close:hover { color: var(--text); }
+        /* ---------- Misc ---------- */
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-1 { gap: 0.4rem; }
+        .gap-2 { gap: 0.8rem; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-muted); }
+        .w-full { width: 100%; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        @media (max-width: 500px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .main-menu { grid-template-columns: repeat(2, 1fr); }
+        }
+        /* ---------- Scrollbar ---------- */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--surface-alt); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Chinese text in UI */
+        .chinese-text { font-family: var(--font-chinese); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface);
+            color: var(--text);
+            padding: 0.7em 1.4em;
+            border-radius: 30px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            max-width: 90vw;
+            text-align: center;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo" onclick="goHome()">HSK <span>Standard Course 3</span></div>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Тема">🌓</button>
+            <button class="size-toggle" onclick="toggleSize()" title="Размер">A</button>
+            <button class="size-toggle" onclick="goHome()" title="Меню">🏠</button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main id="app"></main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal-content" id="modalContent"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   DATA
+   ========================================================================= */
+// --- VOCABULARY (from textbook lessons 1-20) ---
+const VOCAB = [
+    // Lesson 1
+    { id:1, lesson:1, chinese:'周末', pinyin:'zhōumò', translation:'выходные', topic:'Время' },
+    { id:2, lesson:1, chinese:'打算', pinyin:'dǎsuàn', translation:'планировать', topic:'Действия' },
+    { id:3, lesson:1, chinese:'啊', pinyin:'a', translation:'(частица)', topic:'Частицы' },
+    { id:4, lesson:1, chinese:'跟', pinyin:'gēn', translation:'с', topic:'Предлоги' },
+    { id:5, lesson:1, chinese:'一直', pinyin:'yìzhí', translation:'всё время', topic:'Наречия' },
+    { id:6, lesson:1, chinese:'游戏', pinyin:'yóuxì', translation:'игра', topic:'Абстракции' },
+    { id:7, lesson:1, chinese:'作业', pinyin:'zuòyè', translation:'домашнее задание', topic:'Учёба' },
+    { id:8, lesson:1, chinese:'着急', pinyin:'zháojí', translation:'волноваться', topic:'Эмоции' },
+    { id:9, lesson:1, chinese:'复习', pinyin:'fùxí', translation:'повторять', topic:'Учёба' },
+    { id:10, lesson:1, chinese:'南（方）', pinyin:'nán(fāng)', translation:'юг', topic:'Пространство' },
+    { id:11, lesson:1, chinese:'北方', pinyin:'běifāng', translation:'север', topic:'Пространство' },
+    { id:12, lesson:1, chinese:'面包', pinyin:'miànbāo', translation:'хлеб', topic:'Еда' },
+    { id:13, lesson:1, chinese:'带', pinyin:'dài', translation:'брать с собой', topic:'Действия' },
+    { id:14, lesson:1, chinese:'地图', pinyin:'dìtú', translation:'карта', topic:'Документы' },
+    { id:15, lesson:1, chinese:'搬', pinyin:'bān', translation:'переезжать', topic:'Действия' },
+    // Lesson 2
+    { id:16, lesson:2, chinese:'腿', pinyin:'tuǐ', translation:'нога', topic:'Тело' },
+    { id:17, lesson:2, chinese:'疼', pinyin:'téng', translation:'болеть', topic:'Здоровье' },
+    { id:18, lesson:2, chinese:'脚', pinyin:'jiǎo', translation:'ступня', topic:'Тело' },
+    { id:19, lesson:2, chinese:'树', pinyin:'shù', translation:'дерево', topic:'Природа' },
+    { id:20, lesson:2, chinese:'容易', pinyin:'róngyì', translation:'легко', topic:'Качества' },
+    { id:21, lesson:2, chinese:'难', pinyin:'nán', translation:'трудно', topic:'Качества' },
+    { id:22, lesson:2, chinese:'太太', pinyin:'tàitai', translation:'госпожа', topic:'Обращения' },
+    { id:23, lesson:2, chinese:'秘书', pinyin:'mìshū', translation:'секретарь', topic:'Профессии' },
+    { id:24, lesson:2, chinese:'经理', pinyin:'jīnglǐ', translation:'менеджер', topic:'Профессии' },
+    { id:25, lesson:2, chinese:'办公室', pinyin:'bàngōngshì', translation:'офис', topic:'Места' },
+    { id:26, lesson:2, chinese:'辆', pinyin:'liàng', translation:'(счётное слово для машин)', topic:'Счётные слова' },
+    { id:27, lesson:2, chinese:'楼', pinyin:'lóu', translation:'здание', topic:'Дом' },
+    { id:28, lesson:2, chinese:'拿', pinyin:'ná', translation:'брать', topic:'Действия' },
+    { id:29, lesson:2, chinese:'把', pinyin:'bǎ', translation:'(счётное слово для зонтов)', topic:'Счётные слова' },
+    { id:30, lesson:2, chinese:'伞', pinyin:'sǎn', translation:'зонт', topic:'Вещи' },
+    { id:31, lesson:2, chinese:'胖', pinyin:'pàng', translation:'толстый', topic:'Качества' },
+    { id:32, lesson:2, chinese:'其实', pinyin:'qíshí', translation:'на самом деле', topic:'Наречия' },
+    { id:33, lesson:2, chinese:'瘦', pinyin:'shòu', translation:'худой', topic:'Качества' },
+    // Lesson 3
+    { id:34, lesson:3, chinese:'还是', pinyin:'háishi', translation:'или', topic:'Союзы' },
+    { id:35, lesson:3, chinese:'爬山', pinyin:'páshān', translation:'подниматься в горы', topic:'Спорт' },
+    { id:36, lesson:3, chinese:'小心', pinyin:'xiǎoxīn', translation:'осторожный', topic:'Качества' },
+    { id:37, lesson:3, chinese:'条', pinyin:'tiáo', translation:'(счётное слово для брюк)', topic:'Счётные слова' },
+    { id:38, lesson:3, chinese:'裤子', pinyin:'kùzi', translation:'брюки', topic:'Одежда' },
+    { id:39, lesson:3, chinese:'记得', pinyin:'jìde', translation:'помнить', topic:'Действия' },
+    { id:40, lesson:3, chinese:'衬衫', pinyin:'chènshān', translation:'рубашка', topic:'Одежда' },
+    { id:41, lesson:3, chinese:'元', pinyin:'yuán', translation:'юань', topic:'Деньги' },
+    { id:42, lesson:3, chinese:'新鲜', pinyin:'xīnxiān', translation:'свежий', topic:'Качества' },
+    { id:43, lesson:3, chinese:'甜', pinyin:'tián', translation:'сладкий', topic:'Вкус' },
+    { id:44, lesson:3, chinese:'只', pinyin:'zhǐ', translation:'только', topic:'Наречия' },
+    { id:45, lesson:3, chinese:'放', pinyin:'fàng', translation:'класть', topic:'Действия' },
+    { id:46, lesson:3, chinese:'饮料', pinyin:'yǐnliào', translation:'напиток', topic:'Еда' },
+    { id:47, lesson:3, chinese:'或者', pinyin:'huòzhě', translation:'или', topic:'Союзы' },
+    { id:48, lesson:3, chinese:'舒服', pinyin:'shūfu', translation:'комфортный', topic:'Качества' },
+    { id:49, lesson:3, chinese:'花', pinyin:'huā', translation:'цветок', topic:'Природа' },
+    { id:50, lesson:3, chinese:'绿', pinyin:'lǜ', translation:'зелёный', topic:'Цвета' },
+    // Lesson 4
+    { id:51, lesson:4, chinese:'比赛', pinyin:'bǐsài', translation:'соревнование', topic:'Спорт' },
+    { id:52, lesson:4, chinese:'照片', pinyin:'zhàopiàn', translation:'фотография', topic:'Искусство' },
+    { id:53, lesson:4, chinese:'年级', pinyin:'niánjí', translation:'класс', topic:'Учёба' },
+    { id:54, lesson:4, chinese:'又', pinyin:'yòu', translation:'и... и...', topic:'Наречия' },
+    { id:55, lesson:4, chinese:'聪明', pinyin:'cōngming', translation:'умный', topic:'Качества' },
+    { id:56, lesson:4, chinese:'热情', pinyin:'rèqíng', translation:'тёплый, радушный', topic:'Качества' },
+    { id:57, lesson:4, chinese:'努力', pinyin:'nǔlì', translation:'усердный', topic:'Качества' },
+    { id:58, lesson:4, chinese:'总是', pinyin:'zǒngshì', translation:'всегда', topic:'Наречия' },
+    { id:59, lesson:4, chinese:'回答', pinyin:'huídá', translation:'отвечать', topic:'Действия' },
+    { id:60, lesson:4, chinese:'站', pinyin:'zhàn', translation:'стоять', topic:'Действия' },
+    { id:61, lesson:4, chinese:'饿', pinyin:'è', translation:'голодный', topic:'Еда' },
+    { id:62, lesson:4, chinese:'超市', pinyin:'chāoshì', translation:'супермаркет', topic:'Места' },
+    { id:63, lesson:4, chinese:'蛋糕', pinyin:'dàngāo', translation:'торт', topic:'Еда' },
+    { id:64, lesson:4, chinese:'年轻', pinyin:'niánqīng', translation:'молодой', topic:'Качества' },
+    { id:65, lesson:4, chinese:'认真', pinyin:'rènzhēn', translation:'серьёзный', topic:'Качества' },
+    { id:66, lesson:4, chinese:'客人', pinyin:'kèrén', translation:'гость', topic:'Люди' },
+    // Lesson 5
+    { id:67, lesson:5, chinese:'发烧', pinyin:'fāshāo', translation:'температура', topic:'Здоровье' },
+    { id:68, lesson:5, chinese:'为', pinyin:'wèi', translation:'для', topic:'Предлоги' },
+    { id:69, lesson:5, chinese:'照顾', pinyin:'zhàogù', translation:'заботиться', topic:'Действия' },
+    { id:70, lesson:5, chinese:'用', pinyin:'yòng', translation:'использовать', topic:'Действия' },
+    { id:71, lesson:5, chinese:'感冒', pinyin:'gǎnmào', translation:'простуда', topic:'Здоровье' },
+    { id:72, lesson:5, chinese:'季节', pinyin:'jìjié', translation:'сезон', topic:'Природа' },
+    { id:73, lesson:5, chinese:'当然', pinyin:'dāngrán', translation:'конечно', topic:'Наречия' },
+    { id:74, lesson:5, chinese:'春（天）', pinyin:'chūn(tiān)', translation:'весна', topic:'Природа' },
+    { id:75, lesson:5, chinese:'草', pinyin:'cǎo', translation:'трава', topic:'Природа' },
+    { id:76, lesson:5, chinese:'夏（天）', pinyin:'xià(tiān)', translation:'лето', topic:'Природа' },
+    { id:77, lesson:5, chinese:'裙子', pinyin:'qúnzi', translation:'юбка', topic:'Одежда' },
+    { id:78, lesson:5, chinese:'最近', pinyin:'zuìjìn', translation:'недавно', topic:'Время' },
+    { id:79, lesson:5, chinese:'越', pinyin:'yuè', translation:'чем... тем...', topic:'Наречия' },
+    // Lesson 6
+    { id:80, lesson:6, chinese:'眼镜', pinyin:'yǎnjìng', translation:'очки', topic:'Вещи' },
+    { id:81, lesson:6, chinese:'突然', pinyin:'tūrán', translation:'внезапно', topic:'Наречия' },
+    { id:82, lesson:6, chinese:'离开', pinyin:'líkāi', translation:'покидать', topic:'Действия' },
+    { id:83, lesson:6, chinese:'清楚', pinyin:'qīngchu', translation:'чёткий', topic:'Качества' },
+    { id:84, lesson:6, chinese:'刚才', pinyin:'gāngcái', translation:'только что', topic:'Время' },
+    { id:85, lesson:6, chinese:'帮忙', pinyin:'bāngmáng', translation:'помогать', topic:'Действия' },
+    { id:86, lesson:6, chinese:'特别', pinyin:'tèbié', translation:'особенно', topic:'Наречия' },
+    { id:87, lesson:6, chinese:'讲', pinyin:'jiǎng', translation:'объяснять', topic:'Действия' },
+    { id:88, lesson:6, chinese:'明白', pinyin:'míngbai', translation:'понятный', topic:'Качества' },
+    { id:89, lesson:6, chinese:'锻炼', pinyin:'duànliàn', translation:'тренироваться', topic:'Спорт' },
+    { id:90, lesson:6, chinese:'音乐', pinyin:'yīnyuè', translation:'музыка', topic:'Искусство' },
+    { id:91, lesson:6, chinese:'公园', pinyin:'gōngyuán', translation:'парк', topic:'Места' },
+    { id:92, lesson:6, chinese:'聊天（儿）', pinyin:'liáotiān(r)', translation:'болтать', topic:'Действия' },
+    { id:93, lesson:6, chinese:'睡着', pinyin:'shuìzháo', translation:'заснуть', topic:'Действия' },
+    { id:94, lesson:6, chinese:'更', pinyin:'gèng', translation:'ещё более', topic:'Наречия' },
+    // Lesson 7
+    { id:95, lesson:7, chinese:'同事', pinyin:'tóngshì', translation:'коллега', topic:'Профессии' },
+    { id:96, lesson:7, chinese:'以前', pinyin:'yǐqián', translation:'раньше', topic:'Время' },
+    { id:97, lesson:7, chinese:'银行', pinyin:'yínháng', translation:'банк', topic:'Места' },
+    { id:98, lesson:7, chinese:'久', pinyin:'jiǔ', translation:'долго', topic:'Время' },
+    { id:99, lesson:7, chinese:'感兴趣', pinyin:'gǎn xìngqù', translation:'интересоваться', topic:'Эмоции' },
+    { id:100, lesson:7, chinese:'结婚', pinyin:'jiéhūn', translation:'жениться', topic:'Семья' },
+    { id:101, lesson:7, chinese:'欢迎', pinyin:'huānyíng', translation:'приветствовать', topic:'Действия' },
+    { id:102, lesson:7, chinese:'迟到', pinyin:'chídào', translation:'опаздывать', topic:'Действия' },
+    { id:103, lesson:7, chinese:'半', pinyin:'bàn', translation:'половина', topic:'Числа' },
+    { id:104, lesson:7, chinese:'接', pinyin:'jiē', translation:'встречать', topic:'Действия' },
+    { id:105, lesson:7, chinese:'刻', pinyin:'kè', translation:'четверть', topic:'Время' },
+    { id:106, lesson:7, chinese:'差', pinyin:'chà', translation:'не хватает', topic:'Действия' },
+    // Lesson 8
+    { id:107, lesson:8, chinese:'又', pinyin:'yòu', translation:'снова', topic:'Наречия' },
+    { id:108, lesson:8, chinese:'满意', pinyin:'mǎnyì', translation:'довольный', topic:'Эмоции' },
+    { id:109, lesson:8, chinese:'电梯', pinyin:'diàntī', translation:'лифт', topic:'Дом' },
+    { id:110, lesson:8, chinese:'层', pinyin:'céng', translation:'этаж', topic:'Дом' },
+    { id:111, lesson:8, chinese:'害怕', pinyin:'hàipà', translation:'бояться', topic:'Эмоции' },
+    { id:112, lesson:8, chinese:'熊猫', pinyin:'xióngmāo', translation:'панда', topic:'Природа' },
+    { id:113, lesson:8, chinese:'见面', pinyin:'jiànmiàn', translation:'встречаться', topic:'Действия' },
+    { id:114, lesson:8, chinese:'安静', pinyin:'ānjìng', translation:'тихий', topic:'Качества' },
+    { id:115, lesson:8, chinese:'可乐', pinyin:'kělè', translation:'кола', topic:'Еда' },
+    { id:116, lesson:8, chinese:'一会儿', pinyin:'yíhuìr', translation:'немного', topic:'Время' },
+    { id:117, lesson:8, chinese:'马上', pinyin:'mǎshàng', translation:'сразу', topic:'Наречия' },
+    { id:118, lesson:8, chinese:'洗手间', pinyin:'xǐshǒujiān', translation:'туалет', topic:'Места' },
+    { id:119, lesson:8, chinese:'老', pinyin:'lǎo', translation:'старый', topic:'Качества' },
+    { id:120, lesson:8, chinese:'几乎', pinyin:'jīhū', translation:'почти', topic:'Наречия' },
+    { id:121, lesson:8, chinese:'变化', pinyin:'biànhuà', translation:'изменение', topic:'Абстракции' },
+    { id:122, lesson:8, chinese:'健康', pinyin:'jiànkāng', translation:'здоровый', topic:'Здоровье' },
+    { id:123, lesson:8, chinese:'重要', pinyin:'zhòngyào', translation:'важный', topic:'Качества' },
+    // Lesson 9
+    { id:124, lesson:9, chinese:'中文', pinyin:'zhōngwén', translation:'китайский язык', topic:'Язык' },
+    { id:125, lesson:9, chinese:'班', pinyin:'bān', translation:'класс', topic:'Учёба' },
+    { id:126, lesson:9, chinese:'一样', pinyin:'yíyàng', translation:'одинаковый', topic:'Сравнение' },
+    { id:127, lesson:9, chinese:'最后', pinyin:'zuìhòu', translation:'наконец', topic:'Наречия' },
+    { id:128, lesson:9, chinese:'放心', pinyin:'fàngxīn', translation:'успокоиться', topic:'Эмоции' },
+    { id:129, lesson:9, chinese:'一定', pinyin:'yídìng', translation:'обязательно', topic:'Наречия' },
+    { id:130, lesson:9, chinese:'担心', pinyin:'dānxīn', translation:'беспокоиться', topic:'Эмоции' },
+    { id:131, lesson:9, chinese:'比较', pinyin:'bǐjiào', translation:'сравнительно', topic:'Наречия' },
+    { id:132, lesson:9, chinese:'了解', pinyin:'liǎojiě', translation:'понимать', topic:'Действия' },
+    { id:133, lesson:9, chinese:'先', pinyin:'xiān', translation:'сначала', topic:'Наречия' },
+    { id:134, lesson:9, chinese:'中间', pinyin:'zhōngjiān', translation:'середина', topic:'Пространство' },
+    { id:135, lesson:9, chinese:'参加', pinyin:'cānjiā', translation:'участвовать', topic:'Действия' },
+    { id:136, lesson:9, chinese:'影响', pinyin:'yǐngxiǎng', translation:'влияние', topic:'Абстракции' },
+    // Lesson 10
+    { id:137, lesson:10, chinese:'个子', pinyin:'gèzi', translation:'рост', topic:'Внешность' },
+    { id:138, lesson:10, chinese:'矮', pinyin:'ǎi', translation:'низкий', topic:'Качества' },
+    { id:139, lesson:10, chinese:'历史', pinyin:'lìshǐ', translation:'история', topic:'Учёба' },
+    { id:140, lesson:10, chinese:'体育', pinyin:'tǐyù', translation:'физкультура', topic:'Спорт' },
+    { id:141, lesson:10, chinese:'数学', pinyin:'shùxué', translation:'математика', topic:'Учёба' },
+    { id:142, lesson:10, chinese:'方便', pinyin:'fāngbiàn', translation:'удобный', topic:'Качества' },
+    { id:143, lesson:10, chinese:'自行车', pinyin:'zìxíngchē', translation:'велосипед', topic:'Транспорт' },
+    { id:144, lesson:10, chinese:'骑', pinyin:'qí', translation:'ехать верхом', topic:'Действия' },
+    { id:145, lesson:10, chinese:'旧', pinyin:'jiù', translation:'старый', topic:'Качества' },
+    { id:146, lesson:10, chinese:'换', pinyin:'huàn', translation:'менять', topic:'Действия' },
+    { id:147, lesson:10, chinese:'地方', pinyin:'dìfang', translation:'место', topic:'Пространство' },
+    { id:148, lesson:10, chinese:'中介', pinyin:'zhōngjiè', translation:'посредник', topic:'Дом' },
+    { id:149, lesson:10, chinese:'主要', pinyin:'zhǔyào', translation:'главный', topic:'Качества' },
+    { id:150, lesson:10, chinese:'环境', pinyin:'huánjìng', translation:'окружающая среда', topic:'Абстракции' },
+    { id:151, lesson:10, chinese:'附近', pinyin:'fùjìn', translation:'поблизости', topic:'Пространство' },
+    // Lesson 11
+    { id:152, lesson:11, chinese:'图书馆', pinyin:'túshūguǎn', translation:'библиотека', topic:'Места' },
+    { id:153, lesson:11, chinese:'借', pinyin:'jiè', translation:'брать взаймы', topic:'Действия' },
+    { id:154, lesson:11, chinese:'词典', pinyin:'cídiǎn', translation:'словарь', topic:'Документы' },
+    { id:155, lesson:11, chinese:'还', pinyin:'huán', translation:'возвращать', topic:'Действия' },
+    { id:156, lesson:11, chinese:'灯', pinyin:'dēng', translation:'лампа', topic:'Дом' },
+    { id:157, lesson:11, chinese:'会议', pinyin:'huìyì', translation:'совещание', topic:'Работа' },
+    { id:158, lesson:11, chinese:'结束', pinyin:'jiéshù', translation:'заканчивать', topic:'Действия' },
+    { id:159, lesson:11, chinese:'忘记', pinyin:'wàngjì', translation:'забывать', topic:'Действия' },
+    { id:160, lesson:11, chinese:'空调', pinyin:'kōngtiáo', translation:'кондиционер', topic:'Дом' },
+    { id:161, lesson:11, chinese:'关', pinyin:'guān', translation:'выключать', topic:'Действия' },
+    { id:162, lesson:11, chinese:'地铁', pinyin:'dìtiě', translation:'метро', topic:'Транспорт' },
+    { id:163, lesson:11, chinese:'双', pinyin:'shuāng', translation:'пара', topic:'Счётные слова' },
+    { id:164, lesson:11, chinese:'筷子', pinyin:'kuàizi', translation:'палочки для еды', topic:'Еда' },
+    { id:165, lesson:11, chinese:'啤酒', pinyin:'píjiǔ', translation:'пиво', topic:'Еда' },
+    { id:166, lesson:11, chinese:'口', pinyin:'kǒu', translation:'глоток', topic:'Счётные слова' },
+    { id:167, lesson:11, chinese:'瓶子', pinyin:'píngzi', translation:'бутылка', topic:'Вещи' },
+    { id:168, lesson:11, chinese:'笔记本（电脑）', pinyin:'bǐjìběn(diànnǎo)', translation:'ноутбук', topic:'Техника' },
+    { id:169, lesson:11, chinese:'电子邮件', pinyin:'diànzǐ yóujiàn', translation:'электронная почта', topic:'Техника' },
+    { id:170, lesson:11, chinese:'习惯', pinyin:'xíguàn', translation:'привычка', topic:'Абстракции' },
+    // Lesson 12
+    { id:171, lesson:12, chinese:'太阳', pinyin:'tàiyáng', translation:'солнце', topic:'Природа' },
+    { id:172, lesson:12, chinese:'西', pinyin:'xī', translation:'запад', topic:'Пространство' },
+    { id:173, lesson:12, chinese:'生气', pinyin:'shēngqì', translation:'сердиться', topic:'Эмоции' },
+    { id:174, lesson:12, chinese:'行李箱', pinyin:'xínglǐxiāng', translation:'чемодан', topic:'Вещи' },
+    { id:175, lesson:12, chinese:'自己', pinyin:'zìjǐ', translation:'сам', topic:'Местоимения' },
+    { id:176, lesson:12, chinese:'包', pinyin:'bāo', translation:'сумка', topic:'Вещи' },
+    { id:177, lesson:12, chinese:'发现', pinyin:'fāxiàn', translation:'обнаружить', topic:'Действия' },
+    { id:178, lesson:12, chinese:'护照', pinyin:'hùzhào', translation:'паспорт', topic:'Документы' },
+    { id:179, lesson:12, chinese:'起飞', pinyin:'qǐfēi', translation:'взлетать', topic:'Транспорт' },
+    { id:180, lesson:12, chinese:'司机', pinyin:'sījī', translation:'водитель', topic:'Профессии' },
+    { id:181, lesson:12, chinese:'教', pinyin:'jiāo', translation:'учить', topic:'Учёба' },
+    { id:182, lesson:12, chinese:'画', pinyin:'huà', translation:'рисовать', topic:'Искусство' },
+    { id:183, lesson:12, chinese:'需要', pinyin:'xūyào', translation:'нуждаться', topic:'Действия' },
+    { id:184, lesson:12, chinese:'黑板', pinyin:'hēibǎn', translation:'доска', topic:'Учёба' },
+    // Lesson 13
+    { id:185, lesson:13, chinese:'终于', pinyin:'zhōngyú', translation:'наконец', topic:'Наречия' },
+    { id:186, lesson:13, chinese:'爷爷', pinyin:'yéye', translation:'дедушка', topic:'Семья' },
+    { id:187, lesson:13, chinese:'礼物', pinyin:'lǐwù', translation:'подарок', topic:'Абстракции' },
+    { id:188, lesson:13, chinese:'奶奶', pinyin:'nǎinai', translation:'бабушка', topic:'Семья' },
+    { id:189, lesson:13, chinese:'遇到', pinyin:'yùdào', translation:'встретить', topic:'Действия' },
+    { id:190, lesson:13, chinese:'一边', pinyin:'yìbiān', translation:'с одной стороны', topic:'Наречия' },
+    { id:191, lesson:13, chinese:'过去', pinyin:'guòqù', translation:'прошлое', topic:'Время' },
+    { id:192, lesson:13, chinese:'一般', pinyin:'yìbān', translation:'обычный', topic:'Качества' },
+    { id:193, lesson:13, chinese:'愿意', pinyin:'yuànyì', translation:'желать', topic:'Эмоции' },
+    { id:194, lesson:13, chinese:'起来', pinyin:'qǐlai', translation:'вставать', topic:'Действия' },
+    { id:195, lesson:13, chinese:'应该', pinyin:'yīnggāi', translation:'должен', topic:'Модальные' },
+    { id:196, lesson:13, chinese:'生活', pinyin:'shēnghuó', translation:'жизнь', topic:'Абстракции' },
+    { id:197, lesson:13, chinese:'校长', pinyin:'xiàozhǎng', translation:'директор школы', topic:'Профессии' },
+    { id:198, lesson:13, chinese:'坏', pinyin:'huài', translation:'плохой', topic:'Качества' },
+    { id:199, lesson:13, chinese:'经常', pinyin:'jīngcháng', translation:'часто', topic:'Наречия' },
+    // Lesson 14
+    { id:200, lesson:14, chinese:'打扫', pinyin:'dǎsǎo', translation:'убирать', topic:'Действия' },
+    { id:201, lesson:14, chinese:'干净', pinyin:'gānjìng', translation:'чистый', topic:'Качества' },
+    { id:202, lesson:14, chinese:'然后', pinyin:'ránhòu', translation:'затем', topic:'Наречия' },
+    { id:203, lesson:14, chinese:'冰箱', pinyin:'bīngxiāng', translation:'холодильник', topic:'Дом' },
+    { id:204, lesson:14, chinese:'洗澡', pinyin:'xǐzǎo', translation:'мыться', topic:'Гигиена' },
+    { id:205, lesson:14, chinese:'节目', pinyin:'jiémù', translation:'программа', topic:'СМИ' },
+    { id:206, lesson:14, chinese:'月亮', pinyin:'yuèliang', translation:'луна', topic:'Природа' },
+    { id:207, lesson:14, chinese:'像', pinyin:'xiàng', translation:'быть похожим', topic:'Сравнение' },
+    { id:208, lesson:14, chinese:'盘子', pinyin:'pánzi', translation:'тарелка', topic:'Еда' },
+    { id:209, lesson:14, chinese:'刮风', pinyin:'guāfēng', translation:'ветрено', topic:'Погода' },
+    { id:210, lesson:14, chinese:'叔叔', pinyin:'shūshu', translation:'дядя', topic:'Семья' },
+    { id:211, lesson:14, chinese:'阿姨', pinyin:'āyí', translation:'тётя', topic:'Семья' },
+    { id:212, lesson:14, chinese:'故事', pinyin:'gùshi', translation:'история', topic:'Абстракции' },
+    { id:213, lesson:14, chinese:'声音', pinyin:'shēngyīn', translation:'звук', topic:'Восприятие' },
+    { id:214, lesson:14, chinese:'菜单', pinyin:'càidān', translation:'меню', topic:'Еда' },
+    { id:215, lesson:14, chinese:'简单', pinyin:'jiǎndān', translation:'простой', topic:'Качества' },
+    { id:216, lesson:14, chinese:'香蕉', pinyin:'xiāngjiāo', translation:'банан', topic:'Еда' },
+    // Lesson 15
+    { id:217, lesson:15, chinese:'留学', pinyin:'liúxué', translation:'учиться за границей', topic:'Учёба' },
+    { id:218, lesson:15, chinese:'水平', pinyin:'shuǐpíng', translation:'уровень', topic:'Учёба' },
+    { id:219, lesson:15, chinese:'提高', pinyin:'tígāo', translation:'повышать', topic:'Действия' },
+    { id:220, lesson:15, chinese:'练习', pinyin:'liànxí', translation:'упражнение', topic:'Учёба' },
+    { id:221, lesson:15, chinese:'完成', pinyin:'wánchéng', translation:'завершать', topic:'Действия' },
+    { id:222, lesson:15, chinese:'句子', pinyin:'jùzi', translation:'предложение', topic:'Язык' },
+    { id:223, lesson:15, chinese:'其他', pinyin:'qítā', translation:'другой', topic:'Местоимения' },
+    { id:224, lesson:15, chinese:'发', pinyin:'fā', translation:'отправлять', topic:'Действия' },
+    { id:225, lesson:15, chinese:'要求', pinyin:'yāoqiú', translation:'требование', topic:'Абстракции' },
+    { id:226, lesson:15, chinese:'注意', pinyin:'zhùyì', translation:'обращать внимание', topic:'Действия' },
+    { id:227, lesson:15, chinese:'上网', pinyin:'shàngwǎng', translation:'выходить в интернет', topic:'Техника' },
+    { id:228, lesson:15, chinese:'除了', pinyin:'chúle', translation:'кроме', topic:'Союзы' },
+    { id:229, lesson:15, chinese:'新闻', pinyin:'xīnwén', translation:'новости', topic:'СМИ' },
+    { id:230, lesson:15, chinese:'花', pinyin:'huā', translation:'тратить', topic:'Действия' },
+    { id:231, lesson:15, chinese:'极（了）', pinyin:'jí(le)', translation:'чрезвычайно', topic:'Наречия' },
+    { id:232, lesson:15, chinese:'节日', pinyin:'jiérì', translation:'праздник', topic:'Праздники' },
+    { id:233, lesson:15, chinese:'举行', pinyin:'jǔxíng', translation:'проводить', topic:'Действия' },
+    { id:234, lesson:15, chinese:'世界', pinyin:'shìjiè', translation:'мир', topic:'Абстракции' },
+    { id:235, lesson:15, chinese:'街道', pinyin:'jiēdào', translation:'улица', topic:'Места' },
+    { id:236, lesson:15, chinese:'各', pinyin:'gè', translation:'каждый', topic:'Местоимения' },
+    { id:237, lesson:15, chinese:'文化', pinyin:'wénhuà', translation:'культура', topic:'Абстракции' },
+    // Lesson 16
+    { id:238, lesson:16, chinese:'城市', pinyin:'chéngshì', translation:'город', topic:'Места' },
+    { id:239, lesson:16, chinese:'如果', pinyin:'rúguǒ', translation:'если', topic:'Союзы' },
+    { id:240, lesson:16, chinese:'认为', pinyin:'rènwéi', translation:'считать', topic:'Действия' },
+    { id:241, lesson:16, chinese:'皮鞋', pinyin:'píxié', translation:'кожаные туфли', topic:'Одежда' },
+    { id:242, lesson:16, chinese:'帽子', pinyin:'màozi', translation:'шляпа', topic:'Одежда' },
+    { id:243, lesson:16, chinese:'长', pinyin:'zhǎng', translation:'расти', topic:'Действия' },
+    { id:244, lesson:16, chinese:'可爱', pinyin:'kě\'ài', translation:'милый', topic:'Качества' },
+    { id:245, lesson:16, chinese:'米', pinyin:'mǐ', translation:'метр', topic:'Единицы' },
+    { id:246, lesson:16, chinese:'公斤', pinyin:'gōngjīn', translation:'килограмм', topic:'Единицы' },
+    { id:247, lesson:16, chinese:'鼻子', pinyin:'bízi', translation:'нос', topic:'Тело' },
+    { id:248, lesson:16, chinese:'头发', pinyin:'tóufa', translation:'волосы', topic:'Тело' },
+    { id:249, lesson:16, chinese:'检查', pinyin:'jiǎnchá', translation:'проверять', topic:'Действия' },
+    { id:250, lesson:16, chinese:'刷牙', pinyin:'shuāyá', translation:'чистить зубы', topic:'Гигиена' },
+    { id:251, lesson:16, chinese:'关系', pinyin:'guānxi', translation:'отношения', topic:'Абстракции' },
+    { id:252, lesson:16, chinese:'别人', pinyin:'biéren', translation:'другие', topic:'Местоимения' },
+    { id:253, lesson:16, chinese:'词语', pinyin:'cíyǔ', translation:'слово', topic:'Язык' },
+    // Lesson 17
+    { id:254, lesson:17, chinese:'请假', pinyin:'qǐngjià', translation:'отпрашиваться', topic:'Работа' },
+    { id:255, lesson:17, chinese:'一共', pinyin:'yígòng', translation:'всего', topic:'Наречия' },
+    { id:256, lesson:17, chinese:'邻居', pinyin:'línjū', translation:'сосед', topic:'Люди' },
+    { id:257, lesson:17, chinese:'后来', pinyin:'hòulái', translation:'потом', topic:'Время' },
+    { id:258, lesson:17, chinese:'爱好', pinyin:'àihào', translation:'хобби', topic:'Абстракции' },
+    { id:259, lesson:17, chinese:'办法', pinyin:'bànfǎ', translation:'способ', topic:'Абстракции' },
+    { id:260, lesson:17, chinese:'饱', pinyin:'bǎo', translation:'сытый', topic:'Еда' },
+    { id:261, lesson:17, chinese:'为了', pinyin:'wèile', translation:'для того чтобы', topic:'Союзы' },
+    { id:262, lesson:17, chinese:'决定', pinyin:'juédìng', translation:'решать', topic:'Действия' },
+    { id:263, lesson:17, chinese:'选择', pinyin:'xuǎnzé', translation:'выбирать', topic:'Действия' },
+    { id:264, lesson:17, chinese:'冬（天）', pinyin:'dōng(tiān)', translation:'зима', topic:'Природа' },
+    { id:265, lesson:17, chinese:'必须', pinyin:'bìxū', translation:'должен', topic:'Модальные' },
+    { id:266, lesson:17, chinese:'根据', pinyin:'gēnjù', translation:'согласно', topic:'Предлоги' },
+    { id:267, lesson:17, chinese:'情况', pinyin:'qíngkuàng', translation:'ситуация', topic:'Абстракции' },
+    { id:268, lesson:17, chinese:'口', pinyin:'kǒu', translation:'рот', topic:'Тело' },
+    { id:269, lesson:17, chinese:'渴', pinyin:'kě', translation:'жаждущий', topic:'Еда' },
+    // Lesson 18
+    { id:270, lesson:18, chinese:'向', pinyin:'xiàng', translation:'к', topic:'Предлоги' },
+    { id:271, lesson:18, chinese:'万', pinyin:'wàn', translation:'десять тысяч', topic:'Числа' },
+    { id:272, lesson:18, chinese:'只', pinyin:'zhī', translation:'(счётное слово для животных)', topic:'Счётные слова' },
+    { id:273, lesson:18, chinese:'嘴', pinyin:'zuǐ', translation:'рот', topic:'Тело' },
+    { id:274, lesson:18, chinese:'动物', pinyin:'dòngwù', translation:'животное', topic:'Природа' },
+    { id:275, lesson:18, chinese:'段', pinyin:'duàn', translation:'отрезок', topic:'Абстракции' },
+    { id:276, lesson:18, chinese:'不但……而且……', pinyin:'búdàn...érqiě...', translation:'не только... но и...', topic:'Союзы' },
+    { id:277, lesson:18, chinese:'有名', pinyin:'yǒumíng', translation:'известный', topic:'Качества' },
+    { id:278, lesson:18, chinese:'同意', pinyin:'tóngyì', translation:'соглашаться', topic:'Действия' },
+    { id:279, lesson:18, chinese:'相信', pinyin:'xiāngxìn', translation:'верить', topic:'Действия' },
+    { id:280, lesson:18, chinese:'关于', pinyin:'guānyú', translation:'о', topic:'Предлоги' },
+    { id:281, lesson:18, chinese:'机会', pinyin:'jīhuì', translation:'возможность', topic:'Абстракции' },
+    { id:282, lesson:18, chinese:'国家', pinyin:'guójiā', translation:'страна', topic:'Страны' },
+    { id:283, lesson:18, chinese:'种', pinyin:'zhǒng', translation:'вид', topic:'Счётные слова' },
+    { id:284, lesson:18, chinese:'特点', pinyin:'tèdiǎn', translation:'особенность', topic:'Абстракции' },
+    { id:285, lesson:18, chinese:'奇怪', pinyin:'qíguài', translation:'странный', topic:'Качества' },
+    { id:286, lesson:18, chinese:'地', pinyin:'de', translation:'(частица)', topic:'Частицы' },
+    // Lesson 19
+    { id:287, lesson:19, chinese:'耳朵', pinyin:'ěrduo', translation:'уши', topic:'Тело' },
+    { id:288, lesson:19, chinese:'脸', pinyin:'liǎn', translation:'лицо', topic:'Тело' },
+    { id:289, lesson:19, chinese:'短', pinyin:'duǎn', translation:'короткий', topic:'Качества' },
+    { id:290, lesson:19, chinese:'马', pinyin:'mǎ', translation:'лошадь', topic:'Природа' },
+    { id:291, lesson:19, chinese:'张', pinyin:'zhāng', translation:'(счётное слово для фото)', topic:'Счётные слова' },
+    { id:292, lesson:19, chinese:'位', pinyin:'wèi', translation:'(счётное слово для людей)', topic:'Счётные слова' },
+    { id:293, lesson:19, chinese:'蓝', pinyin:'lán', translation:'синий', topic:'Цвета' },
+    { id:294, lesson:19, chinese:'秋（天）', pinyin:'qiū(tiān)', translation:'осень', topic:'Природа' },
+    { id:295, lesson:19, chinese:'过', pinyin:'guò', translation:'проводить', topic:'Действия' },
+    { id:296, lesson:19, chinese:'鸟', pinyin:'niǎo', translation:'птица', topic:'Природа' },
+    { id:297, lesson:19, chinese:'哭', pinyin:'kū', translation:'плакать', topic:'Действия' },
+    { id:298, lesson:19, chinese:'黄河', pinyin:'Huáng Hé', translation:'Хуанхэ', topic:'Места' },
+    { id:299, lesson:19, chinese:'船', pinyin:'chuán', translation:'лодка', topic:'Транспорт' },
+    { id:300, lesson:19, chinese:'经过', pinyin:'jīngguò', translation:'проходить', topic:'Действия' },
+    // Lesson 20
+    { id:301, lesson:20, chinese:'照相机', pinyin:'zhàoxiàngjī', translation:'фотоаппарат', topic:'Техника' },
+    { id:302, lesson:20, chinese:'被', pinyin:'bèi', translation:'(показатель пассива)', topic:'Грамматика' },
+    { id:303, lesson:20, chinese:'难过', pinyin:'nánguò', translation:'грустный', topic:'Эмоции' },
+    { id:304, lesson:20, chinese:'东', pinyin:'dōng', translation:'восток', topic:'Пространство' },
+    { id:305, lesson:20, chinese:'信用卡', pinyin:'xìnyòngkǎ', translation:'кредитная карта', topic:'Деньги' },
+    { id:306, lesson:20, chinese:'关心', pinyin:'guānxīn', translation:'заботиться', topic:'Действия' },
+    { id:307, lesson:20, chinese:'只有……才……', pinyin:'zhǐyǒu...cái...', translation:'только если... то...', topic:'Союзы' },
+    { id:308, lesson:20, chinese:'成绩', pinyin:'chéngjì', translation:'успеваемость', topic:'Учёба' },
+    { id:309, lesson:20, chinese:'碗', pinyin:'wǎn', translation:'чашка', topic:'Еда' },
+    { id:310, lesson:20, chinese:'分', pinyin:'fēn', translation:'различать', topic:'Действия' },
+    { id:311, lesson:20, chinese:'解决', pinyin:'jiějué', translation:'решать', topic:'Действия' },
+    { id:312, lesson:20, chinese:'试', pinyin:'shì', translation:'пробовать', topic:'Действия' },
+    { id:313, lesson:20, chinese:'真正', pinyin:'zhēnzhèng', translation:'настоящий', topic:'Качества' },
+    { id:314, lesson:20, chinese:'多么', pinyin:'duōme', translation:'насколько', topic:'Наречия' },
+];
+
+// --- GRAMMAR POINTS ---
+const GRAMMAR = [
+    { id:1, lesson:1, title:'Результативный комплемент 好', formula:'V + 好', explanation:'Указывает на завершение действия с удовлетворительным результатом', examples:['今晚的电影小刚已经买好票了。','饭还没做好，请你等一会儿。','去旅游的东西准备好了吗？'] },
+    { id:2, lesson:1, title:'Отрицание 一……也/都+不/没……', formula:'一 + счётное слово + сущ. + 也/都 + 不/没 + V', explanation:'Полное отрицание', examples:['我一个苹果也不想吃。','昨天他一件衣服都没买。','手机、电脑、地图，一个也不能少。'] },
+    { id:3, lesson:1, title:'Союз 那', formula:'那 + ...', explanation:'Указывает на результат или суждение на основе предыдущего', examples:['我不想去看电影。那我也不去了。','我早就复习好了。那也不能一直玩儿啊。'] },
+    { id:4, lesson:2, title:'Простой направительный комплемент', formula:'V + 来/去', explanation:'Указывает направление действия', examples:['我们在楼上等你呢，你上来吧。','谁在外边？你出去看看吧。','汉语书你带来了吗？'] },
+    { id:5, lesson:2, title:'Последовательные действия', formula:'V1了……就V2……', explanation:'Два действия происходят последовательно', examples:['我下了课就吃饭。','妈妈起了床就做早饭。','小刚拿了伞就下来。'] },
+    { id:6, lesson:2, title:'Риторический вопрос 能……吗？', formula:'能……吗？', explanation:'Утвердительная форма выражает отрицание, отрицательная — утверждение', examples:['你不做作业，也不练习，能学好吗？','你每天晚上吃了饭就睡觉，能不胖吗？'] },
+    { id:7, lesson:3, title:'还是 и 或者', formula:'还是 / 或者', explanation:'还是 — в вопросительных предложениях, 或者 — в утвердительных', examples:['你要喝咖啡还是喝茶？','今天晚上吃米饭或者面条都可以。'] },
+    { id:8, lesson:3, title:'Выражение существования', formula:'Location + V着 + Numeral + MW + N', explanation:'Указывает на наличие предмета в определённом месте', examples:['桌子上放着一杯咖啡。','我家楼上住着一个老师。','上面写着320元。'] },
+    { id:9, lesson:3, title:'会 как возможность', formula:'会 + V', explanation:'Указывает на возможность события в будущем', examples:['你穿得那么少，会感冒的。','别担心，我会照顾好自己。','喝杯热茶会很舒服。'] },
+    { id:10, lesson:4, title:'又……又……', formula:'又 + Adj1 + 又 + Adj2', explanation:'Одновременное наличие двух качеств', examples:['这个西瓜又大又甜。','外边又黑又冷。','服务员又年轻又漂亮。'] },
+    { id:11, lesson:4, title:'Сопровождающее действие', formula:'V1着(O1) + V2(O2)', explanation:'Два одновременных действия, V1 — способ или состояние V2', examples:['弟弟吃着苹果写作业。','周先生和周太太坐着看电视。','她总是笑着跟客人说话。'] },
+    { id:12, lesson:5, title:'了 как изменение', formula:'...了', explanation:'Указывает на изменение ситуации или появление нового состояния', examples:['上个月很冷，现在天气不那么冷了。','我前几天有点儿发烧，现在好多了。','我现在喜欢夏天了。'] },
+    { id:13, lesson:5, title:'越来越 + Adj/V', formula:'越来越 + Adj/V', explanation:'Постепенное нарастание признака или действия', examples:['我认识的汉字越来越多。','你越来越漂亮。','我越来越喜欢运动。'] },
+    { id:14, lesson:6, title:'Комплемент возможности', formula:'V得/不 + комплемент', explanation:'Указывает на возможность или невозможность достижения результата', examples:['我看得清楚那个汉字。','楼太高了，我上不去。','我找不到好饭馆。'] },
+    { id:15, lesson:6, title:'呢 для вопроса о месте', formula:'N + 呢？', explanation:'Спрашивает, где находится человек или предмет', examples:['你的书呢？放在哪儿了？','我的眼镜呢？你看见了吗？'] },
+    { id:16, lesson:6, title:'刚 и 刚才', formula:'刚 / 刚才', explanation:'刚 — наречие, 刚才 — существительное; 刚才 указывает на несколько минут назад, 刚 — на короткий промежуток с точки зрения говорящего', examples:['爸爸刚出去。','爸爸刚才出去了。','我刚放在桌子上，现在就没了。'] },
+    { id:17, lesson:7, title:'Выражение длительности', formula:'S + V + Duration + O', explanation:'Указывает на продолжительность действия', examples:['她工作了三年。','我们坐了一个小时公共汽车。','我们唱了两个小时歌。'] },
+    { id:18, lesson:7, title:'Выражение интереса', formula:'对……感兴趣 / 对……有兴趣', explanation:'Выражает интерес к чему-либо', examples:['他们对电影感兴趣。','我儿子对打篮球不感兴趣。','我对她更感兴趣。'] },
+    { id:19, lesson:7, title:'半, 刻, 差 для времени', formula:'半 / 刻 / 差', explanation:'半 — половина, 刻 — четверть, 差 — без', examples:['一点半','十二点一刻','差一刻八点'] },
+    { id:20, lesson:8, title:'又 и 再', formula:'又 + V / 再 + V', explanation:'又 — повторение уже произошедшего, 再 — повторение ещё не произошедшего', examples:['上个星期我买了一条裤子，昨天又买了一条。','你只吃了一点儿饭，再吃一点儿吧。'] },
+    { id:21, lesson:8, title:'Вопросительные местоимения (1)', formula:'谁……就……谁 / 什么……就……什么', explanation:'Вопросительные местоимения используются для указания на тождество', examples:['你坐哪儿我就坐哪儿。','你喝什么我就喝什么。','谁喜欢他他就喜欢谁。'] },
+    { id:22, lesson:9, title:'越A越B', formula:'越 + A + 越 + B', explanation:'B изменяется вместе с A', examples:['雨越下越大。','你的中文越说越好。','山越高，路越难走。'] },
+    { id:23, lesson:9, title:'Сравнительная конструкция 1', formula:'A + 跟 + B + 一样 (+ Adj)', explanation:'A и B одинаковы', examples:['这本书跟那本书一样。','儿子跟爸爸一样高。','她的汉语说得跟中国人一样好。'] },
+    { id:24, lesson:10, title:'Сравнительная конструкция 2', formula:'A + 比 + B + Adj + 一点儿/一些/得多/多了', explanation:'A более... чем B; 一点儿/一些 — небольшая разница, 得多/多了 — большая', examples:['大山比大卫矮一点儿。','今天的作业比昨天多得多。','数学比历史难多了。'] },
+    { id:25, lesson:10, title:'Приблизительные числа (1)', formula:'Adjacent numerals', explanation:'Соседние числительные выражают приблизительное количество', examples:['我每天学习一两个小时汉语。','你都喝了三四杯咖啡了。','从小丽家到公司骑车七八分钟就能到。'] },
+    { id:26, lesson:11, title:'Конструкция с 把 (1)', formula:'A + 把 + B + V + ...', explanation:'Указывает на воздействие на определённый объект', examples:['请你把衣服洗了。','帮我把这本词典还了。','你把灯关了吧。'] },
+    { id:27, lesson:11, title:'Приблизительные числа (2): 左右', formula:'Numeral + 左右', explanation:'Около, примерно', examples:['周末我一般十点左右起床。','我们公司有五百人左右。','王经理两点左右来了个电话。'] },
+    { id:28, lesson:12, title:'才 и 就', formula:'才 + V / 就 + V', explanation:'就 — действие произошло рано, быстро; 才 — поздно, медленно', examples:['我早上五点就起床了。','八点上课，他九点才起床。','坐飞机一个小时就到了。'] },
+    { id:29, lesson:12, title:'Конструкция с 把 (2)', formula:'A + 把 + B + V + 在/到/给 + ...', explanation:'Указывает на изменение местоположения или передачу', examples:['我把照片放在你包里了。','我帮你把衣服放到行李箱里吧。','我把鲜花送给老师了。'] },
+    { id:30, lesson:13, title:'Сложный направительный комплемент', formula:'V + 上/下/进/出/回/过/起 + 来/去', explanation:'Указывает направление действия', examples:['老师拿出一本书来。','小狗从房间跑出来。','坐久了还可以站起来休息一会儿。'] },
+    { id:31, lesson:13, title:'一边……一边……', formula:'一边 + V1 + 一边 + V2', explanation:'Два одновременных действия', examples:['妈妈一边唱歌一边做饭。','老师边说边笑。','我丈夫喜欢一边吃早饭一边看报纸。'] },
+    { id:32, lesson:14, title:'Конструкция с 把 (3)', formula:'A + 把 + B + V + результат/направление', explanation:'Указывает на результат или направление воздействия', examples:['我把衣服洗干净了。','妈妈还没把饭做好呢。','你把水果拿过来。'] },
+    { id:33, lesson:14, title:'先……，再/又……，然后……', formula:'先 + V1 + 再/又 + V2 + 然后 + V3', explanation:'Указывает последовательность действий', examples:['回家以后，我先做作业，然后吃饭。','你先把电视节目看完吧，然后再给我回电话。'] },
+    { id:34, lesson:15, title:'除了……以外，都/还/也……', formula:'除了 + ... + (以外), ...都/还/也...', explanation:'Исключение или дополнение', examples:['除了这个汉字以外，别的汉字我都认识。','除了唱歌以外，他还喜欢跳舞。'] },
+    { id:35, lesson:15, title:'Вопросительные местоимения (2)', formula:'什么 + ...', explanation:'什么 как указательное местоимение для вежливости', examples:['这个饭馆有没有什么特别好吃的菜？','周末你有没有什么打算？','你写得很好，没什么问题。'] },
+    { id:36, lesson:15, title:'Степень: 极了', formula:'Adj/V + 极了', explanation:'Высшая степень', examples:['我的小狗可爱极了。','今天天气冷极了。','他满意极了。'] },
+    { id:37, lesson:16, title:'如果……（的话），（S）就……', formula:'如果 + ..., (的话), (S) + 就 + ...', explanation:'Условное предложение', examples:['如果你太累了，就休息一会儿。','如果明天下雨的话，我就不去了。'] },
+    { id:38, lesson:16, title:'Сложный комплемент состояния', formula:'Adj/V + 得 + V-фраза', explanation:'Описывает состояние', examples:['孩子们玩儿得不想回家。','弟弟高兴得跳了起来。','儿子累得下了班就睡觉了。'] },
+    { id:39, lesson:16, title:'Удвоение односложных прилагательных', formula:'AA + 的', explanation:'Указывает на высокую степень признака', examples:['你送的花红红的，我很喜欢。','这些草绿绿的，真漂亮。','他鼻子小小的，长得像谁？'] },
+    { id:40, lesson:17, title:'Удвоение двусложных глаголов', formula:'ABAB', explanation:'Указывает на кратковременность или попытку', examples:['他是谁？你介绍我们认识认识吧。','有时间你帮助帮助他吧。','我真应该多锻炼锻炼了。'] },
+    { id:41, lesson:17, title:'Вопросительные местоимения (3)', formula:'谁/什么/怎么/哪儿 + 都/也', explanation:'Обобщение: все, всё, везде', examples:['谁都喜欢小丽。','小刚什么都喜欢吃。','最近我觉得哪儿都不舒服。'] },
+    { id:42, lesson:18, title:'只要……就……', formula:'只要 + ..., 就 + ...', explanation:'Достаточное условие', examples:['只要我有时间，就一定跟你去旅游。','我只要喜欢，就一定会买。','只要你给我买，我就能照顾好它。'] },
+    { id:43, lesson:18, title:'Предлог 关于', formula:'关于 + сущ.', explanation:'Вводит объект речи', examples:['我最近看了一些关于中国文化的电影。','关于这件事，我们还没有决定呢。','关于这个工作，还有什么问题吗？'] },
+    { id:44, lesson:19, title:'Переносное значение направительных комплементов', formula:'V + 出来 / 下来 / 起来', explanation:'出来 — появление нового, распознавание; 下来 — переход от движения к покою; 起来 — результат воспоминания', examples:['这个字你能写出来吗？','天黑了，孩子们要回家了。','我想起来了。'] },
+    { id:45, lesson:19, title:'使, 叫, 让', formula:'使/叫/让 + сущ. + V', explanation:'Каузативная конструкция', examples:['读书使我快乐。','考试让我很紧张。','穿运动服让他更年轻。'] },
+    { id:46, lesson:20, title:'Пассивная конструкция с 被', formula:'S + 被/叫/让 + O + V + ...', explanation:'Пассивный залог', examples:['我被男朋友影响了。','帽子被刮跑了。','我的照相机被谁拿走了？'] },
+    { id:47, lesson:20, title:'只有……才……', formula:'只有 + ..., 才 + ...', explanation:'Единственное условие', examples:['只有写完作业，才能看电视。','只有妈妈做的饭，她才爱吃。','只有爸爸、妈妈才能分出来。'] },
+];
+
+// --- TEXTS ---
+const TEXTS = [
+    { id:1, lesson:1, title:'周末你有什么打算', titleRu:'Что ты планируешь на выходные?', content:'小丽：周末你有什么打算？\n小刚：我早就想好了，请你吃饭、看电影、喝咖啡。\n小丽：请我？\n小刚：是啊，我已经找好饭馆了，电影票也买好了。\n小丽：我还没想好要不要跟你去呢。', translation:'Сяоли: Что ты планируешь на выходные?\nСяоган: Я уже давно придумал: приглашу тебя поужинать, посмотреть фильм, выпить кофе.\nСяоли: Меня?\nСяоган: Да, я уже нашёл ресторан, и билеты в кино купил.\nСяоли: Я ещё не решила, идти ли с тобой.' },
+    { id:2, lesson:2, title:'他什么时候回来', titleRu:'Когда он вернётся?', content:'周太太：喂，你好，请问周明在吗？\n秘书：周经理出去了，不在办公室。\n周太太：他去哪儿了？什么时候回来？\n秘书：他出去办事了，下午回来。\n周太太：回来了就让他给我打个电话。\n秘书：好的，他到了办公室我就告诉他。', translation:'Госпожа Чжоу: Алло, здравствуйте, Чжоу Мин на месте?\nСекретарь: Менеджер Чжоу вышел, его нет в офисе.\nГоспожа Чжоу: Куда он пошёл? Когда вернётся?\nСекретарь: Он ушёл по делам, вернётся после обеда.\nГоспожа Чжоу: Как вернётся, пусть позвонит мне.\nСекретарь: Хорошо, как только он придёт в офис, я ему скажу.' },
+    { id:3, lesson:3, title:'桌子上放着很多饮料', titleRu:'На столе стоит много напитков', content:'小丽：桌子上放着很多饮料，你喝什么？\n小刚：茶或者咖啡都可以。你呢？你喝什么？\n小丽：我喝茶，茶是我的最爱。天冷了或者工作累了的时候，喝杯热茶会很舒服。\n小刚：你喜欢喝什么茶？\n小丽：花茶、绿茶、红茶，我都喜欢。', translation:'Сяоли: На столе стоит много напитков, что ты будешь?\nСяоган: Чай или кофе — всё можно. А ты? Что ты будешь?\nСяоли: Я буду чай, чай — моя любовь. Когда холодно или устал от работы, выпить чашку горячего чая очень приятно.\nСяоган: Какой чай ты любишь?\nСяоли: Цветочный, зелёный, чёрный — все люблю.' },
+    { id:4, lesson:4, title:'她总是笑着跟客人说话', titleRu:'Она всегда улыбается, разговаривая с гостями', content:'小丽：你觉得小红怎么样？\n同学：她又聪明又热情，也很努力。\n小丽：我看她总是笑着回答老师的问题。\n同学：她对每个人都笑，也常常对我笑。\n小丽：你是不是喜欢她啊？\n同学：喜欢她的人太多了，你看那些拿着鲜花站在门口的，都是等她的。', translation:'Сяоли: Как ты думаешь о Сяохун?\nОднокурсник: Она и умная, и热情, и очень усердная.\nСяоли: Я вижу, она всегда с улыбкой отвечает на вопросы учителя.\nОднокурсник: Она всем улыбается, и мне тоже часто.\nСяоли: Ты что, влюбился в неё?\nОднокурсник: У неё слишком много поклонников, видишь тех, с цветами у входа, все ждут её.' },
+    { id:5, lesson:5, title:'我最近越来越胖了', titleRu:'Я в последнее время становлюсь всё толще', content:'小丽：我最近越来越胖了。\n小刚：谁说的？我觉得你越来越漂亮了。\n小丽：你看，这条裙子是去年买的，今年就不能穿了。\n小刚：那是因为你吃得太多了，少吃点儿吧。\n小丽：我做的饭越来越好吃，我能少吃吗？', translation:'Сяоли: Я в последнее время становлюсь всё толще.\nСяоган: Кто сказал? Я думаю, ты становишься всё красивее.\nСяоли: Смотри, эту юбку я купила в прошлом году, а в этом уже не могу носить.\nСяоган: Это потому, что ты слишком много ешь, ешь поменьше.\nСяоли: Еда, которую я готовлю, становится всё вкуснее, как я могу есть меньше?' },
+    { id:6, lesson:6, title:'怎么突然找不到了', titleRu:'Как вдруг пропало?', content:'周明：我的眼镜呢？怎么突然找不到了？你看见了吗？\n周太太：我没看见啊。\n周明：我离不开眼镜，没有眼镜，我一个字也看不清楚。\n周太太：你去房间找找，是不是刚才放在桌子上了？\n周明：我怎么看得到啊？你快过来帮忙啊。\n周太太：好吧，我帮你去找找。', translation:'Чжоу Мин: Где мои очки? Как вдруг пропали? Ты видела?\nГоспожа Чжоу: Я не видела.\nЧжоу Мин: Я не могу без очков, без них я ни одного слова не вижу.\nГоспожа Чжоу: Пойди в комнату поищи, может, только что на стол положил?\nЧжоу Мин: Как я найду? Иди скорее помоги.\nГоспожа Чжоу: Ладно, помогу тебе поискать.' },
+    { id:7, lesson:7, title:'我跟她都认识五年了', titleRu:'Я с ней знаком уже пять лет', content:'小刚：我跟小丽下个月结婚，到时候欢迎你来。\n同事：什么？结婚？\n小刚：对啊，突然吗？\n同事：你们不是刚认识吗？\n小刚：我跟她都认识五年了。\n同事：你跟她结婚，那我怎么办啊？', translation:'Сяоган: Мы с Сяоли в следующем месяце женимся, добро пожаловать.\nКоллега: Что? Свадьба?\nСяоган: Да, внезапно?\nКоллега: Вы же только что познакомились?\nСяоган: Я с ней знаком уже пять лет.\nКоллега: Ты на ней женишься, а как же я?' },
+    { id:8, lesson:8, title:'你去哪儿我就去哪儿', titleRu:'Куда ты, туда и я', content:'小丽：小刚，我们坐哪儿？\n小刚：你坐哪儿我就坐哪儿。\n小丽：坐这儿吧，这儿安静。你想喝什么饮料？\n小刚：你喝什么我就喝什么。\n小丽：喝可乐吧。你等我一会儿，我马上回来。\n小刚：小丽，你去哪儿？你去哪儿我就去哪儿。\n小丽：我去洗手间。', translation:'Сяоли: Сяоган, куда сядем?\nСяоган: Куда ты, туда и я.\nСяоли: Давай сюда, здесь тихо. Что будешь пить?\nСяоган: Что ты, то и я.\nСяоли: Давай колу. Подожди меня немного, я скоро вернусь.\nСяоган: Сяоли, ты куда? Куда ты, туда и я.\nСяоли: Я в туалет.' },
+    { id:9, lesson:9, title:'她的汉语说得跟中国人一样好', titleRu:'Она говорит по-китайски так же хорошо, как китаец', content:'大山：马可，你的中文越说越好了！\n马可：哪里哪里，我们班李静说得更好。\n大山：怎么好？\n马可：她的汉语说得跟中国人一样好。\n大山：李静？我怎么没听说过这个名字？\n马可：她是我们的汉语老师。', translation:'Дашань: Марк, твой китайский становится всё лучше!\nМарк: Что ты, в нашей группе Ли Цзин говорит ещё лучше.\nДашань: Насколько лучше?\nМарк: Она говорит по-китайски так же хорошо, как китаец.\nДашань: Ли Цзин? Я что-то не слышал этого имени.\nМарк: Она наш учитель китайского.' },
+    { id:10, lesson:10, title:'数学比历史难多了', titleRu:'Математика намного сложнее истории', content:'小明：我喜欢历史课、体育课，不喜欢数学课。\n同学：为什么？数学也很有意思啊。\n小明：我觉得数学比历史难多了，我听不懂。\n同学：别担心，我可以帮你。\n小明：好啊，我们每天学多长时间？\n同学：一两个小时吧。', translation:'Сяомин: Я люблю уроки истории, физкультуры, не люблю математику.\nОднокурсник: Почему? Математика тоже очень интересная.\nСяомин: Я думаю, математика намного сложнее истории, я не понимаю.\nОднокурсник: Не волнуйся, я могу помочь.\nСяомин: Хорошо, сколько будем заниматься каждый день?\nОднокурсник: Часа-два.' },
+    { id:11, lesson:11, title:'别忘了把空调关了', titleRu:'Не забудь выключить кондиционер', content:'小明：我先走了。\n同学：你去哪儿？\n小明：我去图书馆借本书。\n同学：帮我把这本词典还了吧。\n小明：好，等一会儿你离开教室的时候，记得把灯关了。\n同学：好的，放心吧。', translation:'Сяомин: Я пошёл.\nОднокурсник: Ты куда?\nСяомин: В библиотеку, взять книгу.\nОднокурсник: Помоги мне вернуть этот словарь.\nСяомин: Хорошо, когда будешь уходить из класса, не забудь выключить свет.\nОднокурсник: Хорошо, не волнуйся.' },
+    { id:12, lesson:12, title:'把重要的东西放在我这儿吧', titleRu:'Оставь важные вещи у меня', content:'周明：你怎么才来？\n小刚：对不起，周经理，来机场的路上我才发现忘带护照了。\n周明：快点吧，飞机就要起飞了。\n小刚：您有钱吗？司机把我送到机场的时候，我才发现忘记带钱包了。\n周明：我看你还是把重要的东西放在我这儿吧。', translation:'Чжоу Мин: Почему ты только сейчас?\nСяоган: Извините, менеджер Чжоу, по дороге в аэропорт я обнаружил, что забыл паспорт.\nЧжоу Мин: Быстрее, самолёт скоро взлетает.\nСяоган: У вас есть деньги? Когда водитель привёз меня в аэропорт, я обнаружил, что забыл кошелёк.\nЧжоу Мин: Я думаю, тебе лучше оставить важные вещи у меня.' },
+    { id:13, lesson:13, title:'我是走回来的', titleRu:'Я вернулся пешком', content:'小丽：你终于回来了！从哪儿买回来这么多东西啊？\n小刚：都是从那边的商店买回来的。\n小丽：怎么还买红酒回来了？谁喝啊？\n小刚：这是给爷爷的礼物，明天我们一起送过去，看看爷爷奶奶。\n小丽：那我的礼物呢？快拿出来让我看看。\n小刚：我不是已经回来了吗？', translation:'Сяоли: Ты наконец вернулся! Откуда столько всего купил?\nСяоган: Всё из магазина вон там.\nСяоли: Зачем ещё красное вино? Кто будет пить?\nСяоган: Это подарок дедушке, завтра вместе отнесём, проведаем дедушку и бабушку.\nСяоли: А мой подарок? Доставай скорее, покажи.\nСяоган: Разве я уже не вернулся?' },
+    { id:14, lesson:14, title:'你把水果拿过来', titleRu:'Принеси фрукты', content:'周太太：客人就要来了，你怎么还不打扫房间啊？\n周明：别着急，我让孩子们打扫呢，客人来的时候，他们会把房间打扫干净。\n周太太：那你也不能看电视啊。\n周明：你让我做什么？\n周太太：先把茶和杯子放好，然后把冰箱里的西瓜拿出来。\n周明：太热了，我还是先把空调打开吧。', translation:'Госпожа Чжоу: Гости скоро придут, почему ты ещё не убрал комнату?\nЧжоу Мин: Не волнуйся, я заставил детей убрать, когда гости придут, они уже уберут комнату.\nГоспожа Чжоу: Но ты не можешь смотреть телевизор.\nЧжоу Мин: Что мне делать?\nГоспожа Чжоу: Сначала поставь чай и чашки, потом достань арбуз из холодильника.\nЧжоу Мин: Слишком жарко, я лучше сначала включу кондиционер.' },
+    { id:15, lesson:15, title:'其他都没什么问题', titleRu:'В остальном нет проблем', content:'大山：老师，我来中国留学两年了，但是我的汉语水平提高得一点儿也不快啊。\n老师：你每天认真学习，做练习、完成作业，一直不错啊。\n大山：这是我昨天的作业，您帮我看看对不对。\n老师：写得不错，除了这个句子意思有些不清楚外，其他都没什么问题。\n大山：谢谢老师！\n老师：以后有什么不明白的地方，可以给我打电话或者发电子邮件。', translation:'Дашань: Учитель, я учусь в Китае уже два года, но мой китайский улучшается совсем не быстро.\nУчитель: Ты каждый день усердно учишься, делаешь упражнения, выполняешь домашние задания — всё хорошо.\nДашань: Это моё вчерашнее домашнее задание, посмотрите, правильно?\nУчитель: Написано неплохо, кроме того, что смысл этого предложения немного неясен, в остальном нет проблем.\nДашань: Спасибо, учитель!\nУчитель: Если в будущем что-то будет непонятно, можешь позвонить мне или отправить электронное письмо.' },
+    { id:16, lesson:16, title:'我现在累得下了班就想睡觉', titleRu:'Я так устал, что после работы хочу только спать', content:'小丽：我不喜欢一直住在同一个城市，想去其他城市看一看。\n周明：我年轻的时候也这么想，但是那时候没有钱，如果有钱，就去了。\n小丽：那您现在为什么不去？\n周明：现在钱不是问题了，主要是没有时间。\n小丽：我认为现在您有时间也不会出去玩儿。\n周明：你说得对，我现在累得下了班就想睡觉。', translation:'Сяоли: Я не люблю всё время жить в одном городе, хочу посмотреть другие города.\nЧжоу Мин: Я в молодости тоже так думал, но тогда не было денег, если бы были, поехал бы.\nСяоли: А почему сейчас не едете?\nЧжоу Мин: Сейчас деньги не проблема, главное — нет времени.\nСяоли: Я думаю, даже если бы у вас было время, вы бы не поехали.\nЧжоу Мин: Ты права, я сейчас так устаю, что после работы хочу только спать.' },
+    { id:17, lesson:17, title:'谁都有办法看好你的“病”', titleRu:'У каждого есть способ вылечить твою «болезнь»', content:'周太太：最近我觉得哪儿都不舒服，你带我去医院检查检查吧。\n周明：不用去医院，谁都有办法看好你的“病”。我问你，你多久没运动了？\n周太太：我三年没运动了。\n周明：谁都知道运动对身体好。但是你吃饱了就睡。\n周太太：为了健康，我真应该多锻炼锻炼了。从明天起，我决定每天去长跑。', translation:'Госпожа Чжоу: В последнее время мне кажется, что везде нехорошо, отведи меня в больницу провериться.\nЧжоу Мин: Не надо в больницу, у каждого есть способ вылечить твою «болезнь». Скажи, сколько ты уже не занималась спортом?\nГоспожа Чжоу: Три года не занималась.\nЧжоу Мин: Все знают, что спорт полезен для здоровья. Но ты наелась и спишь.\nГоспожа Чжоу: Ради здоровья мне действительно нужно больше тренироваться. С завтрашнего дня я решила каждый день бегать.' },
+    { id:18, lesson:18, title:'我相信他们会同意的', titleRu:'Я верю, они согласятся', content:'朋友：老周，我打算买房子了，想向你借点儿钱。\n周明：没问题，只要我有，就一定会借给你的。还差多少？\n朋友：还差5万块钱。\n周明：好，钱下午打给你。你打算在哪儿买房？\n朋友：就在我们医院前面。\n周明：那你以后去医院就方便了。', translation:'Друг: Лао Чжоу, я собираюсь купить квартиру, хочу занять у тебя немного денег.\nЧжоу Мин: Без проблем, если у меня есть, обязательно дам в долг. Сколько не хватает?\nДруг: Не хватает 50 тысяч.\nЧжоу Мин: Хорошо, днём переведу. Где собираешься покупать?\nДруг: Прямо перед нашей больницей.\nЧжоу Мин: Тогда тебе будет удобно ходить в больницу.' },
+    { id:19, lesson:19, title:'你没看出来吗', titleRu:'Ты не узнал?', content:'爸爸：女儿最近喜欢把头发放在耳朵后面，你知道为什么吗？\n妈妈：这样可以使她的脸看上去漂亮一些。\n爸爸：我最近觉得她和以前不太一样了。\n妈妈：女儿变化不小，她小时候喜欢短头发，像男孩子一样。\n爸爸：我也想起来了。她现在慢慢地开始像个女孩子了。', translation:'Папа: Дочь в последнее время любит убирать волосы за уши, знаешь почему?\nМама: Так её лицо выглядит красивее.\nПапа: Мне кажется, она стала не такой, как раньше.\nМама: Дочь сильно изменилась, в детстве она любила короткие волосы, была похожа на мальчика.\nПапа: Я тоже вспомнил. Сейчас она постепенно становится похожей на девочку.' },
+    { id:20, lesson:20, title:'我被他影响了', titleRu:'Я поддался его влиянию', content:'小丽：我的照相机被谁拿走了？怎么找不到了？\n同事：你再找找。是不是没带来？\n小丽：我找了，没找到啊。\n同事：别难过，再买一个吧，公司东门外不就有一个大商场吗？\n小丽：但是我这个月信用卡里的钱已经花得差不多了。', translation:'Сяоли: Кто взял мой фотоаппарат? Почему не могу найти?\nКоллега: Поищи ещё. Может, не приносила?\nСяоли: Я искала, не нашла.\nКоллега: Не расстраивайся, купи новый, разве за восточными воротами компании нет большого магазина?\nСяоли: Но в этом месяце деньги на кредитной карте я уже почти все потратила.' },
+];
+
+// --- WRITTEN TRANSLATION TICKETS ---
+const TRANSLATION_TICKETS = [
+    { id:1, lesson:1, question:'Я уже давно придумал: приглашу тебя поужинать, посмотреть фильм, выпить кофе.', keywords:['想好','请','吃饭','看电影','喝咖啡'], sample:'我早就想好了，请你吃饭、看电影、喝咖啡。' },
+    { id:2, lesson:1, question:'Я ещё не решила, идти ли с тобой.', keywords:['没想好','要不要','跟'], sample:'我还没想好要不要跟你去呢。' },
+    { id:3, lesson:2, question:'Он ушёл по делам, вернётся после обеда.', keywords:['出去','办事','下午','回来'], sample:'他出去办事了，下午回来。' },
+    { id:4, lesson:2, question:'Как только он придёт в офис, я ему скажу.', keywords:['到了','办公室','就','告诉'], sample:'他到了办公室我就告诉他。' },
+    { id:5, lesson:3, question:'На столе стоит много напитков, что ты будешь?', keywords:['桌子上','放','饮料','喝'], sample:'桌子上放着很多饮料，你喝什么？' },
+    { id:6, lesson:3, question:'Когда холодно или устал от работы, выпить чашку горячего чая очень приятно.', keywords:['冷了','累了','热茶','舒服'], sample:'天冷了或者工作累了的时候，喝杯热茶会很舒服。' },
+    { id:7, lesson:4, question:'Она и умная, и热情, и очень усердная.', keywords:['又','聪明','热情','努力'], sample:'她又聪明又热情，也很努力。' },
+    { id:8, lesson:4, question:'Она всегда с улыбкой отвечает на вопросы учителя.', keywords:['总是','笑着','回答','问题'], sample:'她总是笑着回答老师的问题。' },
+    { id:9, lesson:5, question:'Я в последнее время становлюсь всё толще.', keywords:['最近','越来越','胖'], sample:'我最近越来越胖了。' },
+    { id:10, lesson:5, question:'Еда, которую я готовлю, становится всё вкуснее.', keywords:['做的饭','越来越','好吃'], sample:'我做的饭越来越好吃。' },
+    { id:11, lesson:6, question:'Я не могу без очков, без них я ни одного слова не вижу.', keywords:['离不开','眼镜','一个字','看不清'], sample:'我离不开眼镜，没有眼镜，我一个字也看不清楚。' },
+    { id:12, lesson:6, question:'Может, только что на стол положил?', keywords:['刚才','放','桌子'], sample:'是不是刚才放在桌子上了？' },
+    { id:13, lesson:7, question:'Я с ней знаком уже пять лет.', keywords:['跟','认识','五年'], sample:'我跟她都认识五年了。' },
+    { id:14, lesson:7, question:'Ты на ней женишься, а как же я?', keywords:['跟','结婚','怎么办'], sample:'你跟她结婚，那我怎么办啊？' },
+    { id:15, lesson:8, question:'Куда ты, туда и я.', keywords:['哪儿','就','哪儿'], sample:'你去哪儿我就去哪儿。' },
+    { id:16, lesson:8, question:'Что ты, то и я.', keywords:['什么','就','什么'], sample:'你喝什么我就喝什么。' },
+    { id:17, lesson:9, question:'Она говорит по-китайски так же хорошо, как китаец.', keywords:['汉语','说','跟','一样好'], sample:'她的汉语说得跟中国人一样好。' },
+    { id:18, lesson:9, question:'Твой китайский становится всё лучше!', keywords:['中文','越','说','好'], sample:'你的中文越说越好了！' },
+    { id:19, lesson:10, question:'Я думаю, математика намного сложнее истории.', keywords:['觉得','数学','比','历史','难多了'], sample:'我觉得数学比历史难多了。' },
+    { id:20, lesson:10, question:'Сколько будем заниматься каждый день? Часа-два.', keywords:['每天','学','多长时间','一两个小时'], sample:'我们每天学多长时间？一两个小时吧。' },
+    { id:21, lesson:11, question:'Не забудь выключить кондиционер.', keywords:['别','忘记','把','空调','关'], sample:'别忘了把空调关了。' },
+    { id:22, lesson:11, question:'Помоги мне вернуть этот словарь.', keywords:['帮','把','词典','还'], sample:'帮我把这本词典还了吧。' },
+    { id:23, lesson:12, question:'По дороге в аэропорт я обнаружил, что забыл паспорт.', keywords:['来','机场','路上','发现','忘','护照'], sample:'来机场的路上我才发现忘带护照了。' },
+    { id:24, lesson:12, question:'Я думаю, тебе лучше оставить важные вещи у меня.', keywords:['看','还是','把','重要','东西','放'], sample:'我看你还是把重要的东西放在我这儿吧。' },
+    { id:25, lesson:13, question:'Ты наконец вернулся!', keywords:['终于','回来'], sample:'你终于回来了！' },
+    { id:26, lesson:13, question:'Это подарок дедушке, завтра вместе отнесём.', keywords:['给','爷爷','礼物','明天','送'], sample:'这是给爷爷的礼物，明天我们一起送过去。' },
+    { id:27, lesson:14, question:'Сначала поставь чай и чашки, потом достань арбуз из холодильника.', keywords:['先','把','茶','杯子','放好','然后','冰箱','西瓜','拿出来'], sample:'先把茶和杯子放好，然后把冰箱里的西瓜拿出来。' },
+    { id:28, lesson:14, question:'Слишком жарко, я лучше сначала включу кондиционер.', keywords:['太热','还是','先','把','空调','打开'], sample:'太热了，我还是先把空调打开吧。' },
+    { id:29, lesson:15, question:'Кроме того, что смысл этого предложения немного неясен, в остальном нет проблем.', keywords:['除了','句子','意思','不清楚','其他','没问题'], sample:'除了这个句子意思有些不清楚外，其他都没什么问题。' },
+    { id:30, lesson:15, question:'Если в будущем что-то будет непонятно, можешь позвонить мне или отправить электронное письмо.', keywords:['以后','什么','不明白','打电话','发','电子邮件'], sample:'以后有什么不明白的地方，可以给我打电话或者发电子邮件。' },
+    { id:31, lesson:16, question:'Я сейчас так устаю, что после работы хочу только спать.', keywords:['累得','下了班','就','想','睡觉'], sample:'我现在累得下了班就想睡觉。' },
+    { id:32, lesson:16, question:'Я не люблю всё время жить в одном городе.', keywords:['不喜欢','一直','住','同一个','城市'], sample:'我不喜欢一直住在同一个城市。' },
+    { id:33, lesson:17, question:'Скажи, сколько ты уже не занималась спортом?', keywords:['多久','没','运动'], sample:'你多久没运动了？' },
+    { id:34, lesson:17, question:'Ради здоровья мне действительно нужно больше тренироваться.', keywords:['为了','健康','应该','锻炼'], sample:'为了健康，我真应该多锻炼锻炼了。' },
+    { id:35, lesson:18, question:'Если у меня есть, обязательно дам в долг.', keywords:['只要','有','就','一定','借'], sample:'只要我有，就一定会借给你的。' },
+    { id:36, lesson:18, question:'Тогда тебе будет удобно ходить в больницу.', keywords:['以后','去医院','方便'], sample:'那你以后去医院就方便了。' },
+    { id:37, lesson:19, question:'Ты не узнал? Это же Сяоган.', keywords:['没','看出来','是'], sample:'你没看出来吗？他是小刚啊。' },
+    { id:38, lesson:19, question:'Так её лицо выглядит красивее.', keywords:['这样','脸','看上去','漂亮'], sample:'这样可以使她的脸看上去漂亮一些。' },
+    { id:39, lesson:20, question:'Кто взял мой фотоаппарат?', keywords:['照相机','被','谁','拿走'], sample:'我的照相机被谁拿走了？' },
+    { id:40, lesson:20, question:'Не расстраивайся, купи новый.', keywords:['别','难过','再','买'], sample:'别难过，再买一个吧。' },
+];
+
+// --- GRAMMAR TICKETS ---
+const GRAMMAR_TICKETS = [
+    { id:1, lesson:1, question:'Что означает результативный комплемент 好?', shortAnswer:'Завершение действия с удовлетворительным результатом', fullAnswer:'Результативный комплемент 好 используется после глагола, например 吃好, 准备好, и указывает на завершение действия с удовлетворительным результатом. 我吃完了 означает только завершение действия, а 我吃好了 означает, что действие завершено и результат удовлетворителен.', tags:['基础'] },
+    { id:2, lesson:1, question:'Как образуется отрицание 一……也/都+不/没……?', shortAnswer:'一 + счётное слово + сущ. + 也/都 + 不/没 + V', fullAnswer:'Конструкция используется для полного отрицания. Например: 我一个苹果也不想吃。昨天他一件衣服都没买。手机、电脑、地图，一个也不能少。', tags:['基础'] },
+    { id:3, lesson:1, question:'Как используется союз 那?', shortAnswer:'В начале предложения указывает на результат или суждение на основе предыдущего', fullAnswer:'那 ставится в начале предложения и указывает на результат, вытекающий из предыдущего высказывания. Например: A: 我不想去看电影。B: 那我也不去了。', tags:['基础'] },
+    { id:4, lesson:2, question:'Что такое простой направительный комплемент?', shortAnswer:'V + 来/去', fullAnswer:'来 указывает на движение к говорящему, 去 — от говорящего. Например: 你上来吧。你出去看看吧。', tags:['基础'] },
+    { id:5, lesson:2, question:'Как выразить последовательность двух действий?', shortAnswer:'V1了……就V2……', fullAnswer:'Конструкция указывает на то, что второе действие происходит сразу после первого. Например: 我下了课就吃饭。妈妈起了床就做早饭。', tags:['基础'] },
+    { id:6, lesson:2, question:'Что такое риторический вопрос 能……吗?', shortAnswer:'Утвердительная форма выражает отрицание, отрицательная — утверждение', fullAnswer:'Например: 你不做作业，也不练习，能学好吗？(不能学好) 你每天晚上吃了饭就睡觉，能不胖吗？(会胖)', tags:['基础'] },
+    { id:7, lesson:3, question:'В чём разница между 还是 и 或者?', shortAnswer:'还是 — в вопросительных предложениях, 或者 — в утвердительных', fullAnswer:'还是 используется в вопросах: 你要喝咖啡还是喝茶？ 或者 используется в утверждениях: 今天晚上吃米饭或者面条都可以。', tags:['基础'] },
+    { id:8, lesson:3, question:'Как выразить наличие предмета в определённом месте?', shortAnswer:'Location + V着 + Numeral + MW + N', fullAnswer:'Конструкция указывает на наличие предмета в месте. Например: 桌子上放着一杯咖啡。我家楼上住着一个老师。', tags:['基础'] },
+    { id:9, lesson:3, question:'Как используется 会 для выражения возможности?', shortAnswer:'会 + V', fullAnswer:'会 указывает на возможность события в будущем. Например: 你穿得那么少，会感冒的。别担心，我会照顾好自己。', tags:['基础'] },
+    { id:10, lesson:4, question:'Как образуется конструкция 又……又……?', shortAnswer:'又 + Adj1 + 又 + Adj2', fullAnswer:'Конструкция описывает одновременное наличие двух качеств. Например: 这个西瓜又大又甜。服务员又年轻又漂亮。', tags:['基础'] },
+    { id:11, lesson:4, question:'Как выразить сопровождающее действие?', shortAnswer:'V1着(O1) + V2(O2)', fullAnswer:'V1着 указывает на способ или состояние, в котором происходит V2. Например: 弟弟吃着苹果写作业。她总是笑着跟客人说话。', tags:['基础'] },
+    { id:12, lesson:5, question:'Что означает 了 в конце предложения?', shortAnswer:'Изменение ситуации', fullAnswer:'了 в конце предложения указывает на изменение ситуации или появление нового состояния. Например: 上个月很冷，现在天气不那么冷了。我现在喜欢夏天了。', tags:['基础'] },
+    { id:13, lesson:5, question:'Как образуется конструкция 越来越 + Adj/V?', shortAnswer:'越来越 + Adj/V', fullAnswer:'Конструкция указывает на постепенное нарастание признака или действия. Например: 我认识的汉字越来越多。我越来越喜欢运动。', tags:['基础'] },
+    { id:14, lesson:6, question:'Что такое комплемент возможности?', shortAnswer:'V得/不 + комплемент', fullAnswer:'Комплемент возможности указывает на возможность или невозможность достижения результата. Например: 我看得清楚那个汉字。楼太高了，我上不去。', tags:['基础'] },
+    { id:15, lesson:6, question:'Как используется 呢 для вопроса о месте?', shortAnswer:'N + 呢？', fullAnswer:'Конструкция спрашивает, где находится человек или предмет. Например: 你的书呢？我的眼镜呢？', tags:['基础'] },
+    { id:16, lesson:6, question:'В чём разница между 刚 и 刚才?', shortAnswer:'刚 — наречие, 刚才 — существительное', fullAnswer:'刚才 обычно указывает на несколько минут назад, 刚 — на короткий промежуток с точки зрения говорящего. 刚 ставится только перед глаголом, 刚才 — перед глаголом или в начале предложения.', tags:['基础'] },
+    { id:17, lesson:7, question:'Как выразить длительность действия?', shortAnswer:'S + V + Duration + O', fullAnswer:'Конструкция указывает на продолжительность действия. Например: 她工作了三年。我们坐了一个小时公共汽车。', tags:['基础'] },
+    { id:18, lesson:7, question:'Как выразить интерес?', shortAnswer:'对……感兴趣 / 对……有兴趣', fullAnswer:'Например: 他们对电影感兴趣。我儿子对打篮球不感兴趣。我对她更感兴趣。', tags:['基础'] },
+    { id:19, lesson:7, question:'Как использовать 半, 刻, 差 для времени?', shortAnswer:'半 — половина, 刻 — четверть, 差 — без', fullAnswer:'Например: 一点半, 十二点一刻, 差一刻八点.', tags:['基础'] },
+    { id:20, lesson:8, question:'В чём разница между 又 и 再?', shortAnswer:'又 — повторение уже произошедшего, 再 — ещё не произошедшего', fullAnswer:'Например: 上个星期我买了一条裤子，昨天又买了一条。你只吃了一点儿饭，再吃一点儿吧。', tags:['基础'] },
+    { id:21, lesson:8, question:'Как используются вопросительные местоимения для выражения тождества?', shortAnswer:'谁……就……谁 / 什么……就……什么', fullAnswer:'Например: 你坐哪儿我就坐哪儿。你喝什么我就喝什么。谁喜欢他他就喜欢谁。', tags:['基础'] },
+    { id:22, lesson:9, question:'Что означает 越A越B?', shortAnswer:'Чем A, тем B', fullAnswer:'B изменяется вместе с A. Например: 雨越下越大。你的中文越说越好。山越高，路越难走。', tags:['基础'] },
+    { id:23, lesson:9, question:'Как образуется сравнение A跟B一样?', shortAnswer:'A + 跟 + B + 一样 (+ Adj)', fullAnswer:'A и B одинаковы. Например: 这本书跟那本书一样。儿子跟爸爸一样高。她的汉语说得跟中国人一样好。', tags:['基础'] },
+    { id:24, lesson:10, question:'Как образуется сравнение A比B+Adj+一点儿/一些/得多/多了?', shortAnswer:'A + 比 + B + Adj + 一点儿/一些/得多/多了', fullAnswer:'一点儿/一些 указывают на небольшую разницу, 得多/多了 — на большую. Например: 大山比大卫矮一点儿。数学比历史难多了。', tags:['基础'] },
+    { id:25, lesson:10, question:'Как выразить приблизительное количество?', shortAnswer:'Соседние числительные', fullAnswer:'Например: 一两个小时, 三四杯, 七八分钟.', tags:['基础'] },
+    { id:26, lesson:11, question:'Как образуется конструкция с 把 (1)?', shortAnswer:'A + 把 + B + V + ...', fullAnswer:'Указывает на воздействие на определённый объект. Например: 请你把衣服洗了。帮我把这本词典还了。', tags:['基础'] },
+    { id:27, lesson:11, question:'Как используется 左右 для приблизительного количества?', shortAnswer:'Numeral + 左右', fullAnswer:'Около, примерно. Например: 周末我一般十点左右起床。我们公司有五百人左右。', tags:['基础'] },
+    { id:28, lesson:12, question:'В чём разница между 才 и 就?', shortAnswer:'就 — рано/быстро, 才 — поздно/медленно', fullAnswer:'Например: 我早上五点就起床了。八点上课，他九点才起床。', tags:['基础'] },
+    { id:29, lesson:12, question:'Как образуется конструкция с 把 (2)?', shortAnswer:'A + 把 + B + V + 在/到/给 + ...', fullAnswer:'Указывает на изменение местоположения или передачу. Например: 我把照片放在你包里了。我把鲜花送给老师了。', tags:['基础'] },
+    { id:30, lesson:13, question:'Что такое сложный направительный комплемент?', shortAnswer:'V + 上/下/进/出/回/过/起 + 来/去', fullAnswer:'Например: 老师拿出一本书来。小狗从房间跑出来。坐久了还可以站起来休息一会儿。', tags:['基础'] },
+    { id:31, lesson:13, question:'Как образуется конструкция 一边……一边……?', shortAnswer:'一边 + V1 + 一边 + V2', fullAnswer:'Два одновременных действия. Например: 妈妈一边唱歌一边做饭。我丈夫喜欢一边吃早饭一边看报纸。', tags:['基础'] },
+    { id:32, lesson:14, question:'Как образуется конструкция с 把 (3)?', shortAnswer:'A + 把 + B + V + результат/направление', fullAnswer:'Например: 我把衣服洗干净了。你把水果拿过来。', tags:['基础'] },
+    { id:33, lesson:14, question:'Как выразить последовательность действий?', shortAnswer:'先……，再/又……，然后……', fullAnswer:'Например: 回家以后，我先做作业，然后吃饭。你先把电视节目看完吧，然后再给我回电话。', tags:['基础'] },
+    { id:34, lesson:15, question:'Как образуется конструкция 除了……以外，都/还/也……?', shortAnswer:'除了 + ... + (以外), ...都/还/也...', fullAnswer:'Например: 除了这个汉字以外，别的汉字我都认识。除了唱歌以外，他还喜欢跳舞。', tags:['基础'] },
+    { id:35, lesson:15, question:'Как используется 什么 как указательное местоимение?', shortAnswer:'什么 + ...', fullAnswer:'Для вежливости. Например: 这个饭馆有没有什么特别好吃的菜？周末你有没有什么打算？', tags:['基础'] },
+    { id:36, lesson:15, question:'Как выразить высшую степень с 极了?', shortAnswer:'Adj/V + 极了', fullAnswer:'Например: 我的小狗可爱极了。今天天气冷极了。他满意极了。', tags:['基础'] },
+    { id:37, lesson:16, question:'Как образуется условное предложение 如果……（的话），（S）就……?', shortAnswer:'如果 + ..., (的话), (S) + 就 + ...', fullAnswer:'Например: 如果你太累了，就休息一会儿。如果明天下雨的话，我就不去了。', tags:['基础'] },
+    { id:38, lesson:16, question:'Что такое сложный комплемент состояния?', shortAnswer:'Adj/V + 得 + V-фраза', fullAnswer:'Описывает состояние. Например: 孩子们玩儿得不想回家。弟弟高兴得跳了起来。', tags:['基础'] },
+    { id:39, lesson:16, question:'Как образуется удвоение односложных прилагательных?', shortAnswer:'AA + 的', fullAnswer:'Например: 你送的花红红的，我很喜欢。这些草绿绿的，真漂亮。', tags:['基础'] },
+    { id:40, lesson:17, question:'Как образуется удвоение двусложных глаголов?', shortAnswer:'ABAB', fullAnswer:'Например: 你介绍我们认识认识吧。我真应该多锻炼锻炼了。', tags:['基础'] },
+    { id:41, lesson:17, question:'Как используются вопросительные местоимения для обобщения?', shortAnswer:'谁/什么/怎么/哪儿 + 都/也', fullAnswer:'Например: 谁都喜欢小丽。小刚什么都喜欢吃。最近我觉得哪儿都不舒服。', tags:['基础'] },
+    { id:42, lesson:18, question:'Как образуется конструкция 只要……就……?', shortAnswer:'只要 + ..., 就 + ...', fullAnswer:'Достаточное условие. Например: 只要我有时间，就一定跟你去旅游。只要你给我买，我就能照顾好它。', tags:['基础'] },
+    { id:43, lesson:18, question:'Как используется предлог 关于?', shortAnswer:'关于 + сущ.', fullAnswer:'Вводит объект речи. Например: 我最近看了一些关于中国文化的电影。关于这个工作，还有什么问题吗？', tags:['基础'] },
+    { id:44, lesson:19, question:'Какие переносные значения имеют направительные комплементы?', shortAnswer:'出来 — появление, распознавание; 下来 — переход к покою; 起来 — результат воспоминания', fullAnswer:'Например: 这个字你能写出来吗？天黑了，孩子们要回家了。我想起来了。', tags:['基础'] },
+    { id:45, lesson:19, question:'Как используются 使, 叫, 让?', shortAnswer:'使/叫/让 + сущ. + V', fullAnswer:'Каузативная конструкция. Например: 读书使我快乐。考试让我很紧张。穿运动服让他更年轻。', tags:['基础'] },
+    { id:46, lesson:20, question:'Как образуется пассивная конструкция с 被?', shortAnswer:'S + 被/叫/让 + O + V + ...', fullAnswer:'Например: 我被男朋友影响了。帽子被刮跑了。我的照相机被谁拿走了？', tags:['基础'] },
+    { id:47, lesson:20, question:'Как образуется конструкция 只有……才……?', shortAnswer:'只有 + ..., 才 + ...', fullAnswer:'Единственное условие. Например: 只有写完作业，才能看电视。只有爸爸、妈妈才能分出来。', tags:['基础'] },
+];
+
+/* =========================================================================
+   APP STATE
+   ========================================================================= */
+const State = {
+    view: 'home',
+    currentLesson: null,
+    currentTopic: null,
+    cards: [],
+    currentCardIndex: 0,
+    isFlipped: false,
+    stats: {
+        studiedWords: {},
+        completedExercises: 0,
+        errors: 0,
+        correct: 0,
+        grammarProgress: {},
+        ticketProgress: {},
+        grammarTicketProgress: {},
+    },
+    settings: {
+        theme: 'auto',
+        size: 'normal',
+        showPinyin: true,
+        showTranslation: true,
+        randomOrder: false,
+        autoFlip: false,
+        animationSpeed: 1.0,
+    },
+    exercise: {
+        type: null,
+        questions: [],
+        currentIndex: 0,
+        score: 0,
+        answered: false,
+        selectedOption: null,
+        typedAnswer: '',
+        showFeedback: false,
+        feedbackText: '',
+        feedbackCorrect: false,
+    },
+    modalOpen: false,
+    modalContent: '',
+};
+
+const LS_KEY = 'hsk3_trainer_state';
+
+/* =========================================================================
+   STORAGE
+   ========================================================================= */
+function loadState() {
+    try {
+        const saved = localStorage.getItem(LS_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.stats) State.stats = { ...State.stats, ...parsed.stats };
+            if (parsed.settings) State.settings = { ...State.settings, ...parsed.settings };
+        }
+    } catch (e) { console.warn('Failed to load state', e); }
+}
+function saveState() {
+    try {
+        localStorage.setItem(LS_KEY, JSON.stringify({
+            stats: State.stats,
+            settings: State.settings,
+        }));
+    } catch (e) { console.warn('Failed to save state', e); }
+}
+
+/* =========================================================================
+   UTILITY FUNCTIONS
+   ========================================================================= */
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+function getLessons() {
+    const lessons = new Set(VOCAB.map(v => v.lesson));
+    return [...lessons].sort((a, b) => a - b);
+}
+function getTopics() {
+    const topics = new Set(VOCAB.map(v => v.topic));
+    return [...topics].sort();
+}
+function getWordsByLesson(lesson) {
+    return VOCAB.filter(v => v.lesson === lesson);
+}
+function getWordsByTopic(topic) {
+    return VOCAB.filter(v => v.topic === topic);
+}
+function findWordByChinese(chinese) {
+    return VOCAB.find(v => v.chinese === chinese) || null;
+}
+function showToast(msg, duration = 2000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+}
+function formatDate(date) {
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+/* =========================================================================
+   THEME & SIZE
+   ========================================================================= */
+function applyTheme() {
+    const s = State.settings;
+    let theme = s.theme;
+    if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+}
+function toggleTheme() {
+    const order = ['light', 'dark', 'auto'];
+    const idx = order.indexOf(State.settings.theme);
+    State.settings.theme = order[(idx + 1) % order.length];
+    applyTheme();
+    saveState();
+    showToast('Тема: ' + State.settings.theme);
+}
+function applySize() {
+    document.documentElement.setAttribute('data-size', State.settings.size === 'normal' ? '' : State.settings.size);
+}
+function toggleSize() {
+    const order = ['normal', 'large', 'compact'];
+    const idx = order.indexOf(State.settings.size);
+    State.settings.size = order[(idx + 1) % order.length];
+    applySize();
+    saveState();
+    showToast('Размер: ' + State.settings.size);
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (State.settings.theme === 'auto') applyTheme();
+});
+
+/* =========================================================================
+   MODAL
+   ========================================================================= */
+function openModal(contentHtml) {
+    const overlay = document.getElementById('modalOverlay');
+    const content = document.getElementById('modalContent');
+    content.innerHTML = contentHtml;
+    overlay.classList.add('active');
+    State.modalOpen = true;
+}
+function closeModal() {
+    const overlay = document.getElementById('modalOverlay');
+    overlay.classList.remove('active');
+    State.modalOpen = false;
+}
+
+/* =========================================================================
+   RENDER ROUTER
+   ========================================================================= */
+function render() {
+    const app = document.getElementById('app');
+    let html = '';
+    switch (State.view) {
+        case 'home': html = renderHome(); break;
+        case 'flashcards': html = renderFlashcards(); break;
+        case 'vocab': html = renderVocab(); break;
+        case 'grammar': html = renderGrammar(); break;
+        case 'texts': html = renderTexts(); break;
+        case 'translation': html = renderTranslationMenu(); break;
+        case 'translation-tickets': html = renderTranslationTickets(); break;
+        case 'grammar-tickets': html = renderGrammarTickets(); break;
+        case 'exercise': html = renderExercise(); break;
+        case 'search': html = renderSearch(); break;
+        case 'stats': html = renderStats(); break;
+        case 'settings': html = renderSettings(); break;
+        case 'review-errors': html = renderReviewErrors(); break;
+        case 'exam': html = renderExamMenu(); break;
+        default: html = renderHome();
+    }
+    app.innerHTML = html;
+    attachEventListeners();
+}
+function goHome() {
+    State.view = 'home';
+    State.exercise = { type: null, questions: [], currentIndex: 0, score: 0, answered: false, selectedOption: null, typedAnswer: '', showFeedback: false, feedbackText: '', feedbackCorrect: false };
+    render();
+}
+
+/* =========================================================================
+   HOME
+   ========================================================================= */
+function renderHome() {
+    return `
+    <div class="main-menu">
+        <div class="menu-card" onclick="setView('flashcards')">
+            <span class="icon">🃏</span>
+            <span class="label">Карточки</span>
+            <span class="sub">${VOCAB.length} слов</span>
+        </div>
+        <div class="menu-card" onclick="setView('vocab')">
+            <span class="icon">📚</span>
+            <span class="label">Лексика</span>
+            <span class="sub">по урокам и темам</span>
+        </div>
+        <div class="menu-card" onclick="setView('grammar')">
+            <span class="icon">📐</span>
+            <span class="label">Грамматика</span>
+            <span class="sub">${GRAMMAR.length} тем</span>
+        </div>
+        <div class="menu-card" onclick="setView('texts')">
+            <span class="icon">📖</span>
+            <span class="label">Тексты</span>
+            <span class="sub">${TEXTS.length} текстов</span>
+        </div>
+        <div class="menu-card" onclick="setView('translation')">
+            <span class="icon">🔤</span>
+            <span class="label">Перевод</span>
+            <span class="sub">слова, фразы, тексты</span>
+        </div>
+        <div class="menu-card" onclick="setView('translation-tickets')">
+            <span class="icon">📝</span>
+            <span class="label">Письменный перевод</span>
+            <span class="sub">${TRANSLATION_TICKETS.length} билетов</span>
+        </div>
+        <div class="menu-card" onclick="setView('grammar-tickets')">
+            <span class="icon">🎓</span>
+            <span class="label">Билеты по грамматике</span>
+            <span class="sub">${GRAMMAR_TICKETS.length} вопросов</span>
+        </div>
+        <div class="menu-card" onclick="setView('exercise')">
+            <span class="icon">🧩</span>
+            <span class="label">Упражнения</span>
+            <span class="sub">лексика и грамматика</span>
+        </div>
+        <div class="menu-card" onclick="setView('exam')">
+            <span class="icon">📋</span>
+            <span class="label">Экзамен</span>
+            <span class="sub">проверка знаний</span>
+        </div>
+        <div class="menu-card" onclick="setView('review-errors')">
+            <span class="icon">🔁</span>
+            <span class="label">Повторение ошибок</span>
+            <span class="sub">сложные слова</span>
+        </div>
+        <div class="menu-card" onclick="setView('search')">
+            <span class="icon">🔍</span>
+            <span class="label">Поиск</span>
+            <span class="sub">по всему материалу</span>
+        </div>
+        <div class="menu-card" onclick="setView('stats')">
+            <span class="icon">📊</span>
+            <span class="label">Статистика</span>
+            <span class="sub">прогресс обучения</span>
+        </div>
+        <div class="menu-card" onclick="setView('settings')">
+            <span class="icon">⚙️</span>
+            <span class="label">Настройки</span>
+            <span class="sub">тема, размер, сброс</span>
+        </div>
+    </div>`;
+}
+function setView(view) {
+    State.view = view;
+    if (view !== 'flashcards') {
+        State.cards = [];
+        State.currentCardIndex = 0;
+        State.isFlipped = false;
+    }
+    render();
+}
+
+/* =========================================================================
+   FLASHCARDS
+   ========================================================================= */
+function renderFlashcards() {
+    if (State.cards.length === 0) {
+        State.cards = shuffle(VOCAB);
+        State.currentCardIndex = 0;
+        State.isFlipped = false;
+    }
+    const card = State.cards[State.currentCardIndex];
+    if (!card) return '<p>Нет карточек</p>';
+    const showPinyin = State.settings.showPinyin;
+    const showTranslation = State.settings.showTranslation;
+    const total = State.cards.length;
+    const idx = State.currentCardIndex + 1;
+    const known = State.stats.studiedWords[card.id] || 0;
+    return `
+    <div class="panel">
+        <div class="panel-header">
+            <h2>Карточки</h2>
+            <div class="flex gap-1 flex-wrap">
+                <button class="small" onclick="filterCardsByLesson()">Урок</button>
+                <button class="small" onclick="filterCardsByTopic()">Тема</button>
+                <button class="small" onclick="shuffleCards()">🔀 Перемешать</button>
+                <button class="small" onclick="resetCards()">♻️ Сбросить</button>
+                <button class="small" onclick="setView('home')">🏠</button>
+            </div>
+        </div>
+        <div class="flashcard-area">
+            <div class="flashcard ${State.isFlipped ? 'flipped' : ''}" onclick="flipCard()">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="chinese">${card.chinese}</div>
+                        ${showPinyin ? `<div class="pinyin">${card.pinyin}</div>` : ''}
+                        <div style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-muted);">Урок ${card.lesson} · ${card.topic}</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Нажмите, чтобы перевернуть</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="chinese">${card.chinese}</div>
+                        <div class="pinyin">${card.pinyin}</div>
+                        ${showTranslation ? `<div class="translation">${card.translation}</div>` : '<div class="translation" style="color:var(--text-muted);">Перевод скрыт</div>'}
+                        <div style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-muted);">Урок ${card.lesson} · ${card.topic}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 items-center">
+                <button onclick="prevCard()">◀</button>
+                <span class="text-muted">${idx} / ${total}</span>
+                <button onclick="nextCard()">▶</button>
+            </div>
+            <div class="flex gap-1 flex-wrap">
+                <button class="small" onclick="markCardKnown()">✅ Знаю</button>
+                <button class="small" onclick="markCardUnknown()">❌ Не знаю</button>
+                <button class="small" onclick="togglePinyin()">${showPinyin ? 'Скрыть пиньинь' : 'Показать пиньинь'}</button>
+                <button class="small" onclick="toggleTranslation()">${showTranslation ? 'Скрыть перевод' : 'Показать перевод'}</button>
+            </div>
+            ${known > 0 ? `<div class="text-muted" style="font-size:0.8rem;">Повторений: ${known}</div>` : ''}
+        </div>
+    </div>`;
+}
+function flipCard() {
+    State.isFlipped = !State.isFlipped;
+    render();
+}
+function nextCard() {
+    if (State.currentCardIndex < State.cards.length - 1) {
+        State.currentCardIndex++;
+        State.isFlipped = false;
+        render();
+    }
+}
+function prevCard() {
+    if (State.currentCardIndex > 0) {
+        State.currentCardIndex--;
+        State.isFlipped = false;
+        render();
+    }
+}
+function shuffleCards() {
+    State.cards = shuffle(State.cards);
+    State.currentCardIndex = 0;
+    State.isFlipped = false;
+    render();
+}
+function resetCards() {
+    State.cards = shuffle(VOCAB);
+    State.currentCardIndex = 0;
+    State.isFlipped = false;
+    render();
+}
+function togglePinyin() {
+    State.settings.showPinyin = !State.settings.showPinyin;
+    saveState();
+    render();
+}
+function toggleTranslation() {
+    State.settings.showTranslation = !State.settings.showTranslation;
+    saveState();
+    render();
+}
+function markCardKnown() {
+    const card = State.cards[State.currentCardIndex];
+    if (card) {
+        State.stats.studiedWords[card.id] = (State.stats.studiedWords[card.id] || 0) + 1;
+        saveState();
+        showToast('Отмечено как изученное');
+        nextCard();
+    }
+}
+function markCardUnknown() {
+    const card = State.cards[State.currentCardIndex];
+    if (card) {
+        State.stats.errors++;
+        saveState();
+        showToast('Добавлено в сложные');
+        nextCard();
+    }
+}
+function filterCardsByLesson() {
+    const lessons = getLessons();
+    let html = '<h3>Выберите урок</h3><div class="flex gap-1 flex-wrap" style="margin-top:0.8rem;">';
+    lessons.forEach(l => {
+        html += `<button class="small" onclick="applyFilterLesson(${l})">Урок ${l}</button>`;
+    });
+    html += '</div><div class="mt-2"><button onclick="closeModal()">Отмена</button></div>';
+    openModal(html);
+}
+function applyFilterLesson(lesson) {
+    State.cards = shuffle(getWordsByLesson(lesson));
+    State.currentCardIndex = 0;
+    State.isFlipped = false;
+    closeModal();
+    render();
+    showToast(`Урок ${lesson}: ${State.cards.length} слов`);
+}
+function filterCardsByTopic() {
+    const topics = getTopics();
+    let html = '<h3>Выберите тему</h3><div class="flex gap-1 flex-wrap" style="margin-top:0.8rem;">';
+    topics.forEach(t => {
+        html += `<button class="small" onclick="applyFilterTopic('${t}')">${t}</button>`;
+    });
+    html += '</div><div class="mt-2"><button onclick="closeModal()">Отмена</button></div>';
+    openModal(html);
+}
+function applyFilterTopic(topic) {
+    State.cards = shuffle(getWordsByTopic(topic));
+    State.currentCardIndex = 0;
+    State.isFlipped = false;
+    closeModal();
+    render();
+    showToast(`Тема "${topic}": ${State.cards.length} слов`);
+}
+
+/* =========================================================================
+   VOCABULARY
+   ========================================================================= */
+function renderVocab() {
+    const lessons = getLessons();
+    let html = '<div class="panel"><div class="panel-header"><h2>Лексика</h2><button class="small" onclick="setView(\'home\')">🏠</button></div>';
+    html += '<div class="flex gap-1 flex-wrap mb-2">';
+    lessons.forEach(l => {
+        html += `<button class="small ${State.currentLesson === l ? 'primary' : ''}" onclick="selectLesson(${l})">Урок ${l}</button>`;
+    });
+    html += '</div>';
+    if (State.currentLesson) {
+        const words = getWordsByLesson(State.currentLesson);
+        html += `<h3>Урок ${State.currentLesson} (${words.length} слов)</h3>`;
+        words.forEach(w => {
+            html += `<div class="list-item">
+                <div>
+                    <div class="chinese">${w.chinese} <span class="pinyin">${w.pinyin}</span></div>
+                    <div class="translation">${w.translation}</div>
+                </div>
+                <div class="flex gap-1">
+                    <span class="tag">${w.topic}</span>
+                    <button class="small" onclick="markStudied(${w.id})">✅</button>
+                </div>
+            </div>`;
+        });
+    } else {
+        html += '<p class="text-muted">Выберите урок</p>';
+    }
+    html += '</div>';
+    return html;
+}
+function selectLesson(l) {
+    State.currentLesson = l;
+    render();
+}
+function markStudied(id) {
+    State.stats.studiedWords[id] = (State.stats.studiedWords[id] || 0) + 1;
+    saveState();
+    showToast('Изучено');
+    render();
+}
+
+/* =========================================================================
+   GRAMMAR
+   ========================================================================= */
+function renderGrammar() {
+    let html = '<div class="panel"><div class="panel-header"><h2>Грамматика</h2><button class="small" onclick="setView(\'home\')">🏠</button></div>';
+    GRAMMAR.forEach(g => {
+        html += `<div class="ticket-card" onclick="showGrammarDetail(${g.id})">
+            <div class="ticket-title">
+                <span>${g.title}</span>
+                <span class="tag primary">Урок ${g.lesson}</span>
+            </div>
+            <div class="ticket-body text-muted">${g.formula}</div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+function showGrammarDetail(id) {
+    const g = GRAMMAR.find(x => x.id === id);
+    if (!g) return;
+    let html = `<h3>${g.title}</h3>
+        <p><strong>Формула:</strong> ${g.formula}</p>
+        <p><strong>Объяснение:</strong> ${g.explanation}</p>
+        <p><strong>Примеры:</strong></p>
+        <ul>${g.examples.map(e => `<li class="chinese">${e}</li>`).join('')}</ul>
+        <div class="mt-2"><button onclick="closeModal()">Закрыть</button></div>`;
+    openModal(html);
+}
+
+/* =========================================================================
+   TEXTS
+   ========================================================================= */
+function renderTexts() {
+    let html = '<div class="panel"><div class="panel-header"><h2>Тексты</h2><button class="small" onclick="setView(\'home\')">🏠</button></div>';
+    TEXTS.forEach(t => {
+        html += `<div class="ticket-card" onclick="showTextDetail(${t.id})">
+            <div class="ticket-title">
+                <span>${t.title}</span>
+                <span class="tag accent">Урок ${t.lesson}</span>
+            </div>
+            <div class="ticket-body text-muted">${t.titleRu}</div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+function showTextDetail(id) {
+    const t = TEXTS.find(x => x.id === id);
+    if (!t) return;
+    let html = `<h3>${t.title} <span class="text-muted">(${t.titleRu})</span></h3>
+        <div class="chinese" style="white-space:pre-line; margin:0.8rem 0; line-height:2;">${t.content}</div>
+        <div class="translation" style="white-space:pre-line; line-height:1.8;">${t.translation}</div>
+        <div class="mt-2"><button onclick="closeModal()">Закрыть</button></div>`;
+    openModal(html);
+}
+
+/* =========================================================================
+   EXERCISE ENGINE
+   ========================================================================= */
+function renderExercise() {
+    if (State.exercise.questions.length === 0) {
+        return renderExerciseMenu();
+    }
+    const ex = State.exercise;
+    const q = ex.questions[ex.currentIndex];
+    if (!q) return '<p>Ошибка: нет вопроса</p>';
+    let html = `<div class="panel">
+        <div class="panel-header">
+            <h2>Упражнение</h2>
+            <div class="flex gap-1">
+                <span class="text-muted">${ex.currentIndex + 1} / ${ex.questions.length}</span>
+                <button class="small" onclick="finishExercise()">Завершить</button>
+            </div>
+        </div>`;
+    html += `<div class="exercise-container">
+        <div class="question-text">${q.question}</div>`;
+    if (q.type === 'choice') {
+        html += '<div class="options">';
+        q.options.forEach((opt, i) => {
+            let cls = 'option-btn';
+            if (ex.answered) {
+                if (i === q.correct) cls += ' correct';
+                else if (i === ex.selectedOption) cls += ' incorrect';
+            }
+            html += `<button class="${cls}" onclick="selectOption(${i})" ${ex.answered ? 'disabled' : ''}>${opt}</button>`;
+        });
+        html += '</div>';
+    } else if (q.type === 'input') {
+        html += `<input type="text" id="answerInput" placeholder="Введите ответ..." value="${ex.typedAnswer}" ${ex.answered ? 'disabled' : ''} oninput="State.exercise.typedAnswer = this.value">`;
+        if (!ex.answered) {
+            html += `<button class="primary mt-1" onclick="submitInput()">Проверить</button>`;
+        }
+    }
+    if (ex.showFeedback) {
+        html += `<div class="feedback ${ex.feedbackCorrect ? 'correct' : 'incorrect'}">${ex.feedbackText}</div>`;
+        if (ex.answered && ex.currentIndex < ex.questions.length - 1) {
+            html += `<button class="primary" onclick="nextQuestion()">Далее ▶</button>`;
+        } else if (ex.answered && ex.currentIndex >= ex.questions.length - 1) {
+            html += `<button class="primary" onclick="finishExercise()">Завершить</button>`;
+        }
+    }
+    html += '</div></div>';
+    return html;
+}
+function renderExerciseMenu() {
+    let html = `<div class="panel">
+        <div class="panel-header"><h2>Упражнения</h2><button class="small" onclick="setView('home')">🏠</button></div>
+        <p class="text-muted mb-1">Выберите тип упражнения:</p>
+        <div class="flex gap-1 flex-wrap">
+            <button onclick="startExercise('translate-choice')">Выбор перевода</button>
+            <button onclick="startExercise('word-choice')">Выбор слова</button>
+            <button onclick="startExercise('fill-blank')">Заполнение пропусков</button>
+            <button onclick="startExercise('typing')">Ввод слова</button>
+            <button onclick="startExercise('match')">Сопоставление</button>
+            <button onclick="startExercise('dictation')">Диктант</button>
+            <button onclick="startExercise('true-false')">Правда/Ложь</button>
+            <button onclick="startExercise('grammar-choice')">Грамматика (выбор)</button>
+            <button onclick="startExercise('grammar-fill')">Грамматика (вставка)</button>
+            <button onclick="startExercise('reorder')">Составление предложений</button>
+            <button onclick="startExercise('mini-test')">Мини-тест</button>
+        </div>
+    </div>`;
+    return html;
+}
+function startExercise(type) {
+    const ex = State.exercise;
+    ex.type = type;
+    ex.currentIndex = 0;
+    ex.score = 0;
+    ex.answered = false;
+    ex.selectedOption = null;
+    ex.typedAnswer = '';
+    ex.showFeedback = false;
+    ex.feedbackText = '';
+    ex.feedbackCorrect = false;
+
+    let questions = [];
+    const allWords = [...VOCAB];
+    const shuffled = shuffle(allWords);
+
+    switch (type) {
+        case 'translate-choice': {
+            const sample = shuffled.slice(0, 15);
+            questions = sample.map(w => {
+                const wrong = shuffle(VOCAB.filter(x => x.id !== w.id)).slice(0, 3).map(x => x.translation);
+                const options = shuffle([w.translation, ...wrong]);
+                return { type: 'choice', question: `Как переводится «${w.chinese}» (${w.pinyin})?`, options, correct: options.indexOf(w.translation), word: w };
+            });
+            break;
+        }
+        case 'word-choice': {
+            const sample = shuffled.slice(0, 15);
+            questions = sample.map(w => {
+                const wrong = shuffle(VOCAB.filter(x => x.id !== w.id)).slice(0, 3).map(x => x.chinese);
+                const options = shuffle([w.chinese, ...wrong]);
+                return { type: 'choice', question: `Выберите слово для перевода «${w.translation}»`, options, correct: options.indexOf(w.chinese), word: w };
+            });
+            break;
+        }
+        case 'fill-blank': {
+            const sample = shuffled.filter(w => w.chinese.length >= 2).slice(0, 12);
+            questions = sample.map(w => {
+                const blanked = w.chinese[0] + '＿'.repeat(w.chinese.length - 1);
+                const wrong = shuffle(VOCAB.filter(x => x.id !== w.id && x.chinese.length === w.chinese.length)).slice(0, 3).map(x => x.chinese);
+                if (wrong.length < 3) {
+                    const extra = shuffle(VOCAB.filter(x => x.id !== w.id)).slice(0, 3 - wrong.length).map(x => x.chinese);
+                    wrong.push(...extra);
+                }
+                const options = shuffle([w.chinese, ...wrong.slice(0, 3)]);
+                return { type: 'choice', question: `Заполните пропуск: ${blanked} (${w.pinyin}) — ${w.translation}`, options, correct: options.indexOf(w.chinese), word: w };
+            });
+            break;
+        }
+        case 'typing': {
+            const sample = shuffled.slice(0, 12);
+            questions = sample.map(w => ({
+                type: 'input',
+                question: `Напишите по-китайски: «${w.translation}» (${w.pinyin})`,
+                answer: w.chinese,
+                word: w,
+            }));
+            break;
+        }
+        case 'match': {
+            const sample = shuffled.slice(0, 10);
+            questions = sample.map(w => {
+                const wrong = shuffle(VOCAB.filter(x => x.id !== w.id)).slice(0, 3).map(x => x.translation);
+                const options = shuffle([w.translation, ...wrong]);
+                return { type: 'choice', question: `Найдите пару для «${w.chinese}»`, options, correct: options.indexOf(w.translation), word: w };
+            });
+            break;
+        }
+        case 'dictation': {
+            const sample = shuffled.slice(0, 10);
+            questions = sample.map(w => ({
+                type: 'input',
+                question: `«${w.pinyin}» — ${w.translation}. Напишите иероглифами:`,
+                answer: w.chinese,
+                word: w,
+            }));
+            break;
+        }
+        case 'true-false': {
+            const sample = shuffled.slice(0, 12);
+            questions = sample.map(w => {
+                const isTrue = Math.random() > 0.5;
+                let shownTranslation = w.translation;
+                if (!isTrue) {
+                    const other = shuffled.find(x => x.id !== w.id);
+                    shownTranslation = other ? other.translation : w.translation;
+                }
+                return {
+                    type: 'choice',
+                    question: `«${w.chinese}» означает «${shownTranslation}». Это правда?`,
+                    options: ['Правда', 'Ложь'],
+                    correct: isTrue ? 0 : 1,
+                    word: w,
+                };
+            });
+            break;
+        }
+        case 'grammar-choice': {
+            const sample = shuffle(GRAMMAR).slice(0, 10);
+            questions = sample.map(g => {
+                const wrong = shuffle(GRAMMAR.filter(x => x.id !== g.id)).slice(0, 3).map(x => x.title);
+                const options = shuffle([g.title, ...wrong]);
+                return { type: 'choice', question: `Какая конструкция используется для: «${g.explanation}»?`, options, correct: options.indexOf(g.title), grammar: g };
+            });
+            break;
+        }
+        case 'grammar-fill': {
+            const sample = shuffle(GRAMMAR).slice(0, 8);
+            questions = sample.map(g => {
+                const ex = g.examples[0];
+                const blanked = ex.replace(g.title.replace(/……/g, '').trim(), '＿＿＿');
+                const wrong = shuffle(GRAMMAR.filter(x => x.id !== g.id)).slice(0, 3).map(x => x.title);
+                const options = shuffle([g.title, ...wrong]);
+                return { type: 'choice', question: `Заполните пропуск: ${blanked}`, options, correct: options.indexOf(g.title), grammar: g };
+            });
+            break;
+        }
+        case 'reorder': {
+            const sample = shuffle(TEXTS).slice(0, 5);
+            questions = sample.map(t => {
+                const sentences = t.content.split('\n').filter(s => s.trim().length > 0);
+                const sentence = sentences[Math.floor(Math.random() * sentences.length)];
+                const chunks = [];
+                for (let i = 0; i < sentence.length; i += 2) {
+                    chunks.push(sentence.substring(i, i + 2));
+                }
+                const shuffledChunks = shuffle(chunks);
+                return {
+                    type: 'choice',
+                    question: `Восстановите порядок: ${shuffledChunks.join(' / ')}`,
+                    options: [sentence, ...shuffle(sentences.filter(s => s !== sentence)).slice(0, 3)],
+                    correct: 0,
+                    original: sentence,
+                };
+            });
+            questions = questions.map(q => {
+                const opts = shuffle(q.options);
+                return { ...q, options: opts, correct: opts.indexOf(q.original) };
+            });
+            break;
+        }
+        case 'mini-test': {
+            const sample = shuffle([
+                ...shuffled.slice(0, 5).map(w => ({ type: 'choice', question: `Перевод «${w.chinese}»?`, options: shuffle([w.translation, ...shuffle(VOCAB.filter(x => x.id !== w.id)).slice(0, 3).map(x => x.translation)]), correct: 0, word: w })),
+                ...shuffle(GRAMMAR).slice(0, 5).map(g => ({ type: 'choice', question: `Конструкция: ${g.explanation}?`, options: shuffle([g.title, ...shuffle(GRAMMAR.filter(x => x.id !== g.id)).slice(0, 3).map(x => x.title)]), correct: 0, grammar: g })),
+            ]);
+            questions = sample.map(q => {
+                const opts = shuffle(q.options);
+                return { ...q, options: opts, correct: opts.indexOf(q.options[0]) };
+            });
+            break;
+        }
+    }
+
+    ex.questions = questions;
+    State.view = 'exercise';
+    render();
+}
+function selectOption(i) {
+    const ex = State.exercise;
+    if (ex.answered) return;
+    const q = ex.questions[ex.currentIndex];
+    ex.selectedOption = i;
+    ex.answered = true;
+    ex.showFeedback = true;
+    const correct = q.correct;
+    if (i === correct) {
+        ex.score++;
+        State.stats.correct++;
+        ex.feedbackText = '✅ Правильно!';
+        ex.feedbackCorrect = true;
+    } else {
+        State.stats.errors++;
+        ex.feedbackText = `❌ Неправильно. Правильный ответ: ${q.options[correct]}`;
+        ex.feedbackCorrect = false;
+    }
+    saveState();
+    render();
+}
+function submitInput() {
+    const ex = State.exercise;
+    if (ex.answered) return;
+    const q = ex.questions[ex.currentIndex];
+    const answer = (ex.typedAnswer || '').trim().toLowerCase();
+    const correctAnswer = q.answer.toLowerCase();
+    ex.answered = true;
+    ex.showFeedback = true;
+    if (answer === correctAnswer) {
+        ex.score++;
+        State.stats.correct++;
+        ex.feedbackText = '✅ Правильно!';
+        ex.feedbackCorrect = true;
+    } else {
+        State.stats.errors++;
+        ex.feedbackText = `❌ Неправильно. Правильный ответ: ${q.answer}`;
+        ex.feedbackCorrect = false;
+    }
+    saveState();
+    render();
+}
+function nextQuestion() {
+    const ex = State.exercise;
+    if (ex.currentIndex < ex.questions.length - 1) {
+        ex.currentIndex++;
+        ex.answered = false;
+        ex.selectedOption = null;
+        ex.typedAnswer = '';
+        ex.showFeedback = false;
+        ex.feedbackText = '';
+        ex.feedbackCorrect = false;
+        render();
+    } else {
+        finishExercise();
+    }
+}
+function finishExercise() {
+    const ex = State.exercise;
+    const total = ex.questions.length;
+    const score = ex.score;
+    const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+    State.stats.completedExercises++;
+    saveState();
+    openModal(`<h3>Результат</h3>
+        <p>Правильных ответов: ${score} из ${total} (${pct}%)</p>
+        <div class="progress-bar mt-1"><div style="width:${pct}%"></div></div>
+        <div class="mt-2 flex gap-1">
+            <button onclick="closeModal(); startExercise('${ex.type}')">Повторить</button>
+            <button onclick="closeModal(); setView('home')">В меню</button>
+        </div>`);
+    State.exercise = { type: null, questions: [], currentIndex: 0, score: 0, answered: false, selectedOption: null, typedAnswer: '', showFeedback: false, feedbackText: '', feedbackCorrect: false };
+    render();
+}
+
+/* =========================================================================
+   TRANSLATION MENU
+   ========================================================================= */
+function renderTranslationMenu() {
+    return `<div class="panel">
+        <div class="panel-header"><h2>Перевод</h2><button class="small" onclick="setView('home')">🏠</button></div>
+        <div class="flex gap-1 flex-wrap">
+            <button onclick="startExercise('translate-choice')">Слова (выбор)</button>
+            <button onclick="startExercise('typing')">Слова (ввод)</button>
+            <button onclick="startExercise('dictation')">Диктант</button>
+            <button onclick="setView('translation-tickets')">Письменный перевод (билеты)</button>
+        </div>
+    </div>`;
+}
+
+/* =========================================================================
+   TRANSLATION TICKETS
+   ========================================================================= */
+function renderTranslationTickets() {
+    let html = `<div class="panel">
+        <div class="panel-header">
+            <h2>Письменный перевод</h2>
+            <div class="flex gap-1">
+                <button class="small" onclick="shuffleTickets()">🔀 Перемешать</button>
+                <button class="small" onclick="setView('home')">🏠</button>
+            </div>
+        </div>
+        <p class="text-muted mb-1">Всего билетов: ${TRANSLATION_TICKETS.length}</p>`;
+    TRANSLATION_TICKETS.forEach(t => {
+        const done = State.stats.ticketProgress[t.id] || 0;
+        html += `<div class="ticket-card" onclick="showTranslationTicket(${t.id})">
+            <div class="ticket-title">
+                <span>Билет ${t.id} · Урок ${t.lesson}</span>
+                <span class="tag ${done > 0 ? 'primary' : ''}">${done > 0 ? '✅ Выполнен' : 'Не выполнен'}</span>
+            </div>
+            <div class="ticket-body chinese">${t.question}</div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+function showTranslationTicket(id) {
+    const t = TRANSLATION_TICKETS.find(x => x.id === id);
+    if (!t) return;
+    let html = `<h3>Билет ${t.id}</h3>
+        <p class="chinese" style="font-size:1.1rem;">${t.question}</p>
+        <p class="text-muted">Ключевые слова: ${t.keywords.map(k => `<span class="tag">${k}</span>`).join(' ')}</p>
+        <div class="mt-1">
+            <label>Ваш ответ:</label>
+            <textarea id="ticketAnswer" rows="3" placeholder="Введите перевод..."></textarea>
+        </div>
+        <div class="flex gap-1 mt-1">
+            <button class="primary" onclick="checkTicketAnswer(${t.id})">Проверить</button>
+            <button onclick="showTicketSample(${t.id})">Показать образец</button>
+            <button onclick="resetTicket(${t.id})">Сбросить</button>
+        </div>
+        <div id="ticketFeedback" class="mt-1"></div>
+        <div class="mt-2"><button onclick="closeModal()">Закрыть</button></div>`;
+    openModal(html);
+}
+function checkTicketAnswer(id) {
+    const t = TRANSLATION_TICKETS.find(x => x.id === id);
+    const answer = (document.getElementById('ticketAnswer').value || '').trim();
+    const feedback = document.getElementById('ticketFeedback');
+    if (!answer) {
+        feedback.innerHTML = '<span class="feedback incorrect">Введите ответ</span>';
+        return;
+    }
+    const found = t.keywords.filter(k => answer.includes(k));
+    const pct = Math.round((found.length / t.keywords.length) * 100);
+    if (pct >= 60) {
+        feedback.innerHTML = `<span class="feedback correct">✅ Хорошо! Совпадение по ключевым словам: ${pct}%</span>`;
+        State.stats.ticketProgress[t.id] = 1;
+        saveState();
+    } else {
+        feedback.innerHTML = `<span class="feedback incorrect">❌ Попробуйте ещё. Совпадение: ${pct}%</span>`;
+    }
+}
+function showTicketSample(id) {
+    const t = TRANSLATION_TICKETS.find(x => x.id === id);
+    document.getElementById('ticketFeedback').innerHTML = `<div class="chinese" style="background:var(--surface-alt); padding:0.6rem; border-radius:8px;">${t.sample}</div>`;
+}
+function resetTicket(id) {
+    document.getElementById('ticketAnswer').value = '';
+    document.getElementById('ticketFeedback').innerHTML = '';
+}
+function shuffleTickets() {
+    showToast('Билеты перемешаны (визуально)');
+    render();
+}
+
+/* =========================================================================
+   GRAMMAR TICKETS
+   ========================================================================= */
+function renderGrammarTickets() {
+    let html = `<div class="panel">
+        <div class="panel-header">
+            <h2>Билеты по грамматике</h2>
+            <button class="small" onclick="setView('home')">🏠</button>
+        </div>
+        <p class="text-muted mb-1">Всего вопросов: ${GRAMMAR_TICKETS.length}</p>`;
+    GRAMMAR_TICKETS.forEach(t => {
+        const done = State.stats.grammarTicketProgress[t.id] || 0;
+        html += `<div class="ticket-card" onclick="showGrammarTicket(${t.id})">
+            <div class="ticket-title">
+                <span>Вопрос ${t.id} · Урок ${t.lesson}</span>
+                <span class="tag ${done > 0 ? 'primary' : ''}">${done > 0 ? '✅ Изучен' : 'Не изучен'}</span>
+            </div>
+            <div class="ticket-body">${t.question}</div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+function showGrammarTicket(id) {
+    const t = GRAMMAR_TICKETS.find(x => x.id === id);
+    if (!t) return;
+    let html = `<h3>Вопрос ${t.id}</h3>
+        <p style="font-weight:500;">${t.question}</p>
+        <p class="text-muted">Краткий ответ: ${t.shortAnswer}</p>
+        <div id="grammarAnswer" class="hidden">
+            <p><strong>Развёрнутый ответ:</strong> ${t.fullAnswer}</p>
+        </div>
+        <div class="flex gap-1 mt-1">
+            <button class="primary" onclick="toggleGrammarAnswer()">Показать ответ</button>
+            <button class="accent" onclick="markGrammarStudied(${t.id})">✅ Изучено</button>
+        </div>
+        <div class="mt-2"><button onclick="closeModal()">Закрыть</button></div>`;
+    openModal(html);
+}
+function toggleGrammarAnswer() {
+    const el = document.getElementById('grammarAnswer');
+    if (el) el.classList.toggle('hidden');
+}
+function markGrammarStudied(id) {
+    State.stats.grammarTicketProgress[id] = 1;
+    saveState();
+    showToast('Отмечено как изученное');
+    closeModal();
+    render();
+}
+
+/* =========================================================================
+   REVIEW ERRORS
+   ========================================================================= */
+function renderReviewErrors() {
+    const difficult = VOCAB.filter(w => (State.stats.studiedWords[w.id] || 0) === 0);
+    const sample = shuffle(difficult).slice(0, 20);
+    if (sample.length === 0) {
+        return `<div class="panel"><div class="panel-header"><h2>Повторение ошибок</h2><button class="small" onclick="setView('home')">🏠</button></div>
+            <p>Нет сложных слов для повторения. Отлично!</p></div>`;
+    }
+    State.cards = sample;
+    State.currentCardIndex = 0;
+    State.isFlipped = false;
+    State.view = 'flashcards';
+    render();
+    return '';
+}
+
+/* =========================================================================
+   SEARCH
+   ========================================================================= */
+function renderSearch() {
+    return `<div class="panel">
+        <div class="panel-header"><h2>Поиск</h2><button class="small" onclick="setView('home')">🏠</button></div>
+        <input type="text" id="searchInput" placeholder="Введите слово, перевод, пиньинь, тему..." oninput="performSearch()">
+        <div id="searchResults" class="mt-2"></div>
+    </div>`;
+}
+function performSearch() {
+    const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+    const results = document.getElementById('searchResults');
+    if (!query) { results.innerHTML = ''; return; }
+    const wordResults = VOCAB.filter(w =>
+        w.chinese.toLowerCase().includes(query) ||
+        w.pinyin.toLowerCase().includes(query) ||
+        w.translation.toLowerCase().includes(query) ||
+        w.topic.toLowerCase().includes(query)
+    ).slice(0, 20);
+    const grammarResults = GRAMMAR.filter(g =>
+        g.title.toLowerCase().includes(query) ||
+        g.explanation.toLowerCase().includes(query)
+    ).slice(0, 10);
+    const ticketResults = TRANSLATION_TICKETS.filter(t =>
+        t.question.toLowerCase().includes(query) ||
+        t.keywords.some(k => k.toLowerCase().includes(query))
+    ).slice(0, 10);
+    const grammarTicketResults = GRAMMAR_TICKETS.filter(t =>
+        t.question.toLowerCase().includes(query) ||
+        t.fullAnswer.toLowerCase().includes(query)
+    ).slice(0, 10);
+
+    let html = '';
+    if (wordResults.length > 0) {
+        html += '<h4>Слова</h4>';
+        wordResults.forEach(w => {
+            html += `<div class="list-item">
+                <div><span class="chinese">${w.chinese}</span> <span class="pinyin">${w.pinyin}</span></div>
+                <div class="translation">${w.translation}</div>
+            </div>`;
+        });
+    }
+    if (grammarResults.length > 0) {
+        html += '<h4 class="mt-1">Грамматика</h4>';
+        grammarResults.forEach(g => {
+            html += `<div class="list-item"><div><strong>${g.title}</strong> — ${g.explanation}</div></div>`;
+        });
+    }
+    if (ticketResults.length > 0) {
+        html += '<h4 class="mt-1">Билеты (перевод)</h4>';
+        ticketResults.forEach(t => {
+            html += `<div class="list-item"><div>${t.question}</div></div>`;
+        });
+    }
+    if (grammarTicketResults.length > 0) {
+        html += '<h4 class="mt-1">Билеты (грамматика)</h4>';
+        grammarTicketResults.forEach(t => {
+            html += `<div class="list-item"><div>${t.question}</div></div>`;
+        });
+    }
+    if (!html) html = '<p class="text-muted">Ничего не найдено</p>';
+    results.innerHTML = html;
+}
+
+/* =========================================================================
+   STATS
+   ========================================================================= */
+function renderStats() {
+    const totalWords = VOCAB.length;
+    const studied = Object.keys(State.stats.studiedWords).length;
+    const remaining = totalWords - studied;
+    const totalExercises = State.stats.completedExercises;
+    const errors = State.stats.errors;
+    const correct = State.stats.correct;
+    const totalAnswers = correct + errors;
+    const pct = totalAnswers > 0 ? Math.round((correct / totalAnswers) * 100) : 0;
+    const grammarLearned = Object.keys(State.stats.grammarTicketProgress).length;
+    const ticketsDone = Object.keys(State.stats.ticketProgress).length;
+
+    return `<div class="panel">
+        <div class="panel-header"><h2>Статистика</h2><button class="small" onclick="setView('home')">🏠</button></div>
+        <div class="stats-grid">
+            <div class="stat-item"><div class="value">${totalWords}</div><div class="label">Всего слов</div></div>
+            <div class="stat-item"><div class="value">${studied}</div><div class="label">Изучено</div></div>
+            <div class="stat-item"><div class="value">${remaining}</div><div class="label">Осталось</div></div>
+            <div class="stat-item"><div class="value">${totalExercises}</div><div class="label">Упражнений</div></div>
+            <div class="stat-item"><div class="value">${errors}</div><div class="label">Ошибок</div></div>
+            <div class="stat-item"><div class="value">${pct}%</div><div class="label">Успешность</div></div>
+            <div class="stat-item"><div class="value">${grammarLearned}/${GRAMMAR_TICKETS.length}</div><div class="label">Грамматика</div></div>
+            <div class="stat-item"><div class="value">${ticketsDone}/${TRANSLATION_TICKETS.length}</div><div class="label">Перевод</div></div>
+        </div>
+        <div class="mt-2">
+            <p>Прогресс по словам:</p>
+            <div class="progress-bar"><div style="width:${Math.round(studied/totalWords*100)}%"></div></div>
+        </div>
+    </div>`;
+}
+
+/* =========================================================================
+   SETTINGS
+   ========================================================================= */
+function renderSettings() {
+    const s = State.settings;
+    return `<div class="panel">
+        <div class="panel-header"><h2>Настройки</h2><button class="small" onclick="setView('home')">🏠</button></div>
+        <div class="grid-2">
+            <div>
+                <h4>Тема</h4>
+                <select onchange="State.settings.theme=this.value; applyTheme(); saveState();">
+                    <option value="auto" ${s.theme==='auto'?'selected':''}>Авто</option>
+                    <option value="light" ${s.theme==='light'?'selected':''}>Светлая</option>
+                    <option value="dark" ${s.theme==='dark'?'selected':''}>Тёмная</option>
+                </select>
+            </div>
+            <div>
+                <h4>Размер</h4>
+                <select onchange="State.settings.size=this.value; applySize(); saveState();">
+                    <option value="normal" ${s.size==='normal'?'selected':''}>Обычный</option>
+                    <option value="large" ${s.size==='large'?'selected':''}>Крупный</option>
+                    <option value="compact" ${s.size==='compact'?'selected':''}>Компактный</option>
+                </select>
+            </div>
+        </div>
+        <div class="mt-2">
+            <label><input type="checkbox" ${s.showPinyin?'checked':''} onchange="State.settings.showPinyin=this.checked; saveState();"> Показывать пиньинь</label><br>
+            <label><input type="checkbox" ${s.showTranslation?'checked':''} onchange="State.settings.showTranslation=this.checked; saveState();"> Показывать перевод</label><br>
+            <label><input type="checkbox" ${s.randomOrder?'checked':''} onchange="State.settings.randomOrder=this.checked; saveState();"> Случайный порядок</label>
+        </div>
+        <div class="mt-2 flex gap-1 flex-wrap">
+            <button onclick="clearProgress()">🗑 Очистить прогресс</button>
+            <button onclick="exportProgress()">📤 Экспорт</button>
+            <button onclick="importProgress()">📥 Импорт</button>
+        </div>
+    </div>`;
+}
+function clearProgress() {
+    if (confirm('Вы уверены, что хотите очистить весь прогресс?')) {
+        State.stats = { studiedWords: {}, completedExercises: 0, errors: 0, correct: 0, grammarProgress: {}, ticketProgress: {}, grammarTicketProgress: {} };
+        saveState();
+        showToast('Прогресс очищен');
+        render();
+    }
+}
+function exportProgress() {
+    const data = JSON.stringify({ stats: State.stats, settings: State.settings });
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'hsk3_progress.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Экспортировано');
+}
+function importProgress() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (data.stats) State.stats = { ...State.stats, ...data.stats };
+                if (data.settings) State.settings = { ...State.settings, ...data.settings };
+                saveState();
+                applyTheme();
+                applySize();
+                showToast('Импортировано');
+                render();
+            } catch (err) {
+                showToast('Ошибка импорта');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+/* =========================================================================
+   EXAM MENU
+   ========================================================================= */
+function renderExamMenu() {
+    return `<div class="panel">
+        <div class="panel-header"><h2>Экзамен</h2><button class="small" onclick="setView('home')">🏠</button></div>
+        <p class="text-muted mb-1">Проверка знаний по всему материалу.</p>
+        <div class="flex gap-1 flex-wrap">
+            <button onclick="startExam()">🎯 Начать экзамен (20 вопросов)</button>
+            <button onclick="startExercise('mini-test')">Мини-тест</button>
+        </div>
+    </div>`;
+}
+function startExam() {
+    const vocabQ = shuffle(VOCAB).slice(0, 10).map(w => {
+        const wrong = shuffle(VOCAB.filter(x => x.id !== w.id)).slice(0, 3).map(x => x.translation);
+        const options = shuffle([w.translation, ...wrong]);
+        return { type: 'choice', question: `Перевод «${w.chinese}»?`, options, correct: options.indexOf(w.translation) };
+    });
+    const grammarQ = shuffle(GRAMMAR).slice(0, 10).map(g => {
+        const wrong = shuffle(GRAMMAR.filter(x => x.id !== g.id)).slice(0, 3).map(x => x.title);
+        const options = shuffle([g.title, ...wrong]);
+        return { type: 'choice', question: `Какая конструкция: ${g.explanation}?`, options, correct: options.indexOf(g.title) };
+    });
+    State.exercise = {
+        type: 'exam',
+        questions: shuffle([...vocabQ, ...grammarQ]),
+        currentIndex: 0,
+        score: 0,
+        answered: false,
+        selectedOption: null,
+        typedAnswer: '',
+        showFeedback: false,
+        feedbackText: '',
+        feedbackCorrect: false,
+    };
+    State.view = 'exercise';
+    render();
+}
+
+/* =========================================================================
+   ATTACH EVENT LISTENERS
+   ========================================================================= */
+function attachEventListeners() {
+    // Inline onclick handles everything
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+function init() {
+    loadState();
+    applyTheme();
+    applySize();
+    render();
+}
+document.addEventListener('DOMContentLoaded', init);
+
+// Expose functions
+window.setView = setView;
+window.goHome = goHome;
+window.toggleTheme = toggleTheme;
+window.toggleSize = toggleSize;
+window.flipCard = flipCard;
+window.nextCard = nextCard;
+window.prevCard = prevCard;
+window.shuffleCards = shuffleCards;
+window.resetCards = resetCards;
+window.togglePinyin = togglePinyin;
+window.toggleTranslation = toggleTranslation;
+window.markCardKnown = markCardKnown;
+window.markCardUnknown = markCardUnknown;
+window.filterCardsByLesson = filterCardsByLesson;
+window.applyFilterLesson = applyFilterLesson;
+window.filterCardsByTopic = filterCardsByTopic;
+window.applyFilterTopic = applyFilterTopic;
+window.selectLesson = selectLesson;
+window.markStudied = markStudied;
+window.showGrammarDetail = showGrammarDetail;
+window.showTextDetail = showTextDetail;
+window.startExercise = startExercise;
+window.selectOption = selectOption;
+window.submitInput = submitInput;
+window.nextQuestion = nextQuestion;
+window.finishExercise = finishExercise;
+window.showTranslationTicket = showTranslationTicket;
+window.checkTicketAnswer = checkTicketAnswer;
+window.showTicketSample = showTicketSample;
+window.resetTicket = resetTicket;
+window.shuffleTickets = shuffleTickets;
+window.showGrammarTicket = showGrammarTicket;
+window.toggleGrammarAnswer = toggleGrammarAnswer;
+window.markGrammarStudied = markGrammarStudied;
+window.performSearch = performSearch;
+window.clearProgress = clearProgress;
+window.exportProgress = exportProgress;
+window.importProgress = importProgress;
+window.startExam = startExam;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.State = State;
+</script>
+</body>
+</html>
